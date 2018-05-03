@@ -1,0 +1,4 @@
+plate_detection/object_detection/model/
+plate_detection/plate_non_plate_classifier/model/
+.idea/
+__pycache__/
