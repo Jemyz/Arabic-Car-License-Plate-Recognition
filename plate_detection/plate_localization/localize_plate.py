@@ -56,7 +56,6 @@ if __name__ == '__main__':
     parser.add_argument(
         '--image', '--img',
         type=str,
-        default="../1.png",
         help='Path to vehicle image.'
     )
     parser.add_argument(

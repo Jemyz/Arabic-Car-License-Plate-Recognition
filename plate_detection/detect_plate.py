@@ -44,4 +44,10 @@ if __name__ == '__main__':
         required=True,
         help='Path to vehicle image.'
     )
+    parser.add_argument(
+        '--view',
+        type=bool,
+        default=True,
+        help='Path to vehicle image.'
+    )
     run(parser.parse_args())
