@@ -1,0 +1,131 @@
+
+item {
+  id: 1
+  name: 'letter'
+}
+
+item {
+  id: 2
+  name: 'digit'
+}
+
+item {
+  id: 3
+  name: '3'
+}
+
+item {
+  id: 4
+  name: '4'
+}
+
+item {
+  id: 5
+  name: '5'
+}
+
+item {
+  id: 6
+  name: '6'
+}
+
+item {
+  id: 7
+  name: '7'
+}
+
+item {
+  id: 8
+  name: '8'
+}
+
+item {
+  id: 9
+  name: '9'
+}
+
+item {
+  id: 10
+  name: 'alef'
+}
+
+item {
+  id: 11
+  name: 'bah'
+}
+
+item {
+  id: 12
+  name: 'geem'
+}
+
+item {
+  id: 13
+  name: 'dal'
+}
+
+item {
+  id: 14
+  name: 'rah'
+}
+
+item {
+  id: 15
+  name: 'seen'
+}
+
+item {
+  id: 16
+  name: 'saad'
+}
+
+item {
+  id: 17
+  name: '3een'
+}
+
+item {
+  id: 18
+  name: 'tah'
+}
+
+item {
+  id: 19
+  name: 'fah'
+}
+
+item {
+  id: 20
+  name: 'kaf'
+}
+
+item {
+  id: 21
+  name: 'lam'
+}
+
+item {
+  id: 22
+  name: 'meem'
+}
+
+item {
+  id: 23
+  name: 'noon'
+}
+
+item {
+  id: 24
+  name: 'hah'
+}
+
+item {
+  id: 25
+  name: 'waw'
+}
+
+item {
+  id: 26
+  name: 'yah'
+}
+

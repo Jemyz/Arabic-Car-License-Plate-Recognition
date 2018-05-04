@@ -1,0 +1,11 @@
+debug = True
+show_img = False
+col_Thresh = 20
+WIDTH_SI = 1050
+HEIGHT_SI = 300
+THRESHOLD = 40
+watershed_bw = [55,50]
+white_thresh = 10
+frame_start_thresh = 0
+frame_end_thresh = 980
+strip_thresh = 55

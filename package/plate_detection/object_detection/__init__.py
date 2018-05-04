@@ -1,0 +1,1 @@
+from package.plate_detection.object_detection.detect_objects import ObjectDetection
