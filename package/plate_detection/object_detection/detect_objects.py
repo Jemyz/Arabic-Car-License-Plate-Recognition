@@ -96,9 +96,12 @@ class ObjectDetection(object):
     def get_largest_object(self, img):
         """return the object with largest area"""
         labels, scores, boxes, masks, img = self.get_objects(img)
-        areas = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
-        max_arg = np.argmax(areas)
-        return labels[max_arg], scores[max_arg], boxes[max_arg], masks, img
+        if boxes.size > 0:
+            # if any of required classes exist, return the largest one.
+            areas = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
+            max_arg = np.argmax(areas)
+            return labels[max_arg], scores[max_arg], boxes[max_arg], masks, img
+        return None, None, None, None, img
 
 
 def run(args):
