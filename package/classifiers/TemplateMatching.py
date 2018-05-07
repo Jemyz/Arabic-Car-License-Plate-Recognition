@@ -6,7 +6,7 @@ import glob
 import time
 from package.classifiers.classification_abstract import ClassificationAbstract
 import os
-from PIL import Image
+from scipy.misc import imread
 
 
 class TemplateMatching(ClassificationAbstract):
@@ -103,7 +103,8 @@ class TemplateMatching(ClassificationAbstract):
 
         for imgPath in glob.glob(self.dataset_path + '/**/*.*'):
             try:
-                image = Image.open(imgPath).convert("L")
+                image = imread(imgPath)
+                image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
                 image = np.asarray(image)
                 image = cv2.resize(image, (self.width, self.height))
                 temp_dataset.append(image)

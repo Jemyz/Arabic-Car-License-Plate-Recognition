@@ -5,8 +5,6 @@ import numpy as np
 import tensorflow as tf
 
 from package.segmentation.neural_network import binary
-from package.segmentation.neural_network import label_map_util
-from package.segmentation.neural_network import visualization_utils as vis_util
 from package.segmentation.segmentaion_abstract import SegmentationAbstract
 
 
@@ -78,28 +76,17 @@ class Inception(SegmentationAbstract):
         return images, boxes_final, classes_final, scores_final
 
     def visualize(self, image, directory, boxes, classes, scores, num_classes):
-        # Number of classes the object detector can identify
-        path_to_label = os.path.join(self.CWD_PATH, "package", "segmentation", "neural_network", 'labelmap.pbtxt')
+        im_width = image.shape[1]
+        im_height = image.shape[0]
 
-        # Load the label map.
-        # Label maps map indices to category names, so that when our convolution
-        # network predicts `5`, we know that this corresponds to `king`.
-        # Here we use internal utility functions, but anything that returns a
-        # dictionary mapping integers to appropriate string labels would be fine
-        label_map = label_map_util.load_labelmap(path_to_label)
-        categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=num_classes,
-                                                                    use_display_name=True)
-        category_index = label_map_util.create_category_index(categories)
+        for i in range(boxes):
+            (left, right, top, bottom) = (boxes[i][1] * im_width,
+                                          boxes[i][3] * im_width,
+                                          boxes[i][0] * im_height,
+                                          boxes[i][2] * im_height)
+            if classes[i] == 1:
+                cv2.rectangle(image, (left, top), (right, bottom), (255, 0, 0), 6)
+            if classes[i] == 2:
+                cv2.rectangle(image, (left, top), (right, bottom), (0, 255, 0), 6)
 
-        # Draw the results of the detection (aka 'visulaize the results')
-        vis_util.visualize_boxes_and_labels_on_image_array(
-            image,
-            np.squeeze(boxes),
-            np.squeeze(classes).astype(np.int32),
-            np.squeeze(scores),
-            category_index,
-            use_normalized_coordinates=True,
-            line_thickness=8,
-            min_score_thresh=0.8)
-        cv2.imwrite(directory, image)
         return image
