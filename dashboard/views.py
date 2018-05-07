@@ -69,15 +69,21 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
                 localize.visualize(vehicle_image, directory, box,
                                    localization_strategy=localization_class,
                                    localization_object=localization_object)
+
                 return ["localization", fs.url(localized_name), note]
+
             localize.append_localization_strategy(localization_class, localization_object)
+
         elif not (localization_type == "None"):
             raise ValueError
         else:
             image = cv2.imread(path)
-    except:
+
+    except Exception as e:
+
         if localization_object is not None and localization_class:
             localize.append_localization_strategy(localization_class, localization_object)
+        print('%s (%s)' % (e, type(e)))
         return ["error", "", "error happened while detecting the plate please try again"]
 
     # --------------------segmentation handling-------------------------
@@ -105,9 +111,12 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
             segmenter.append_segmentation_strategy(segmentation_class, segmentation_object)
         else:
             raise ValueError
-    except:
+
+    except Exception as e:
+
         if segmentation_object is not None and segmentation_class:
             segmenter.append_segmentation_strategy(segmentation_class, segmentation_object)
+        print('%s (%s)' % (e, type(e)))
         return ["error", "", "error happened while segmenting the plate please try again"]
 
     # ---------------------classification handling---------------------------
@@ -132,9 +141,12 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
             classifier.append_classification_strategy(classification_class, classification_object)
         else:
             raise ValueError
-    except:
+
+    except Exception as e:
+
         if classification_object is not None and classification_class:
             classifier.append_classification_strategy(classification_class, classification_object)
+        print('%s (%s)' % (e, type(e)))
         return ["error", "", "error happened while classifying the plate please try again"]
 
     image_new_name = "classification - " + note + "- " + image_name
@@ -204,6 +216,9 @@ def show(request):
         try:
             splits = file.split("-")
             array.append([fs.url(file), splits[1], splits[0]])
-        except:
+
+        except Exception as e:
             array.append([fs.url(file)])
+            print('%s (%s)' % (e, type(e)))
+
     return render(request, 'dashboard/show.html', {'image_list': array})
