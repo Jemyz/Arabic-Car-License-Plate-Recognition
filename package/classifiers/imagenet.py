@@ -18,7 +18,7 @@ class ImageNet(ClassificationAbstract):
     def __init__(self):
 
         self.projectpath = os.path.join(os.getcwd(), "package", "classifiers")
-        self.model_dir = os.path.join(os.getcwd(), "package", "classifiers", "models\\")
+        self.model_dir = os.path.join(os.getcwd(), "package", "classifiers", "models/")
 
         self.HEIGHT = 48
         self.WIDTH = 48

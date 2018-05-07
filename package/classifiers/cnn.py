@@ -15,7 +15,7 @@ class CNN(ClassificationAbstract):
     def __init__(self):
 
         self.projectpath = os.path.join(os.getcwd(), "package", "classifiers")
-        self.model_dir = os.path.join(os.getcwd(), "package", "classifiers", "saved_models\\")
+        self.model_dir = os.path.join(os.getcwd(), "package", "classifiers", "saved_models/")
 
         self.HEIGHT = 48
         self.WIDTH = 48

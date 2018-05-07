@@ -100,6 +100,6 @@ class Inception(SegmentationAbstract):
             category_index,
             use_normalized_coordinates=True,
             line_thickness=8,
-            min_score_thresh=0.7)
+            min_score_thresh=0.8)
         cv2.imwrite(directory, image)
         return image

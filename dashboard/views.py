@@ -106,8 +106,8 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
                                                                                get_object=True,
                                                                                classification_object=class_object)
 
-            cv2.imshow("image", images[image_index])
-            cv2.waitKey()
+            #cv2.imshow("image", images[image_index])
+            #cv2.waitKey()
             note += str(predicted_label)
             # print(int(classes[image_index]))
             print(note)

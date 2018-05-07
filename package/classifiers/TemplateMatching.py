@@ -12,7 +12,7 @@ class TemplateMatching(ClassificationAbstract):
     def __init__(self):
         method_number = 0
 
-        self.model_dir = os.path.join(os.getcwd(), "package", "classifiers", "template_matching\\")
+        self.model_dir = os.path.join(os.getcwd(), "package", "classifiers", "template_matching/")
 
         self.width = 28
         self.height = 28
