@@ -20,11 +20,11 @@ import six
 
 import tensorflow as tf
 
-from object_detection.core import box_list
-from object_detection.core import box_list_ops
-from object_detection.core import standard_fields as fields
-from object_detection.utils import shape_utils
-from object_detection.utils import static_shape
+from package.plate_detection.object_detection.core import box_list
+from package.plate_detection.object_detection.core import box_list_ops
+from package.plate_detection.object_detection.core import standard_fields as fields
+from package.plate_detection.object_detection.utils import shape_utils
+from package.plate_detection.object_detection.utils import static_shape
 
 
 def expanded_shape(orig_shape, start_dim, num_dims):
