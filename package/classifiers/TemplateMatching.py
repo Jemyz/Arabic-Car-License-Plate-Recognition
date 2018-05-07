@@ -7,6 +7,8 @@ import time
 from package.classifiers.classification_abstract import ClassificationAbstract
 import os
 from PIL import Image
+
+
 class TemplateMatching(ClassificationAbstract):
 
     def __init__(self):

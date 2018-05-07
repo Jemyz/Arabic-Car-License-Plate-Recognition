@@ -14,8 +14,8 @@ import time
 
 localization_strategies = {"PlateDetection": 1}
 segmentation_strategies = {"Inception": 1}
-# classification_strategies = {"CNN": 1, "ImageNet": 1, "Svm": 1, "TemplateMatching": 1}
-classification_strategies = {"TemplateMatching": 1}
+classification_strategies = {"CNN": 1, "ImageNet": 1, "Svm": 1, "TemplateMatching": 1}
+# classification_strategies = {"TemplateMatching": 1}
 
 segmenter = package.segmenter(segmentation_strategies)
 classifier = package.classifier(classification_strategies)
@@ -35,9 +35,12 @@ def check_ext(file):
 def handle_image(image_name, classification_type, segmentation_type, localization_type, fs):
     path = os.path.join(settings.MEDIA_ROOT, image_name)
     note = ""
+    localization_object = None
+    segmentation_object = None
+    classification_object = None
     # --------------------localization handling----------------------
 
-    if localization_type in localization_strategies and not (localization_type == "none"):
+    if localization_type in localization_strategies and not (localization_type == "None"):
         localization_class = getattr(package.localizers, localization_type)
         [box, vehicle_image], localization_object = localize.localize(path, localization_strategy=localization_class,
                                                                       get_object=True)
@@ -63,8 +66,10 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
                                localization_object=localization_object)
             return ["localization", fs.url(localized_name), note]
         localize.append_localization_strategy(localization_class, localization_object)
-    else:
+    elif not (localization_type == "None"):
         raise ValueError
+    else:
+        image = cv2.imread(path)
 
     # --------------------segmentation handling-------------------------
 
@@ -96,27 +101,30 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
     print("classifying")
 
     if classification_type in classification_strategies:
-        class_object = None
+        classification_object = None
         classification_class = getattr(package.classifiers, classification_type)
 
         for image_index in range(len(images)):
-            [predicted_label, probability], class_object = classifier.classify(images[image_index],
-                                                                               int(classes[image_index]),
-                                                                               classification_strategy=classification_class,
-                                                                               get_object=True,
-                                                                               classification_object=class_object)
+            [predicted_label, prob], classification_object = classifier.classify(images[image_index],
+                                                                                 int(classes[image_index]),
+                                                                                 classification_strategy=classification_class,
+                                                                                 get_object=True,
+                                                                                 classification_object=classification_object)
 
-            #cv2.imshow("image", images[image_index])
-            #cv2.waitKey()
+            # cv2.imshow("image", images[image_index])
+            # cv2.waitKey()
             note += str(predicted_label)
             # print(int(classes[image_index]))
-            print(note)
-
-        classifier.append_classification_strategy(classification_class, class_object)
+            # print(note)
+        classifier.append_classification_strategy(classification_class, classification_object)
     else:
         raise ValueError
 
-    return ["classification", fs.url(image_name), note]
+    image_new_name = "classification - " + note + "- " + image_name
+    new_path = os.path.join(settings.MEDIA_ROOT, image_new_name)
+    os.rename(path, new_path)
+
+    return ["classification", fs.url(image_new_name), note]
 
 
 def handle_video(filename, classification_type, segmentation_type, localization_type, fs):
