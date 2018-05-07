@@ -79,14 +79,23 @@ class Inception(SegmentationAbstract):
         im_width = image.shape[1]
         im_height = image.shape[0]
 
-        for i in range(boxes):
+        for i in range(len(boxes)):
             (left, right, top, bottom) = (boxes[i][1] * im_width,
                                           boxes[i][3] * im_width,
                                           boxes[i][0] * im_height,
                                           boxes[i][2] * im_height)
             if classes[i] == 1:
-                cv2.rectangle(image, (left, top), (right, bottom), (255, 0, 0), 6)
+                cv2.rectangle(image,
+                              (int(round(left)), int(round(top))),
+                              (int(round(right)), int(round(bottom))),
+                              (255, 0, 0),
+                              4)
             if classes[i] == 2:
-                cv2.rectangle(image, (left, top), (right, bottom), (0, 255, 0), 6)
+                cv2.rectangle(image,
+                              (int(round(left)), int(round(top))),
+                              (int(round(right)), int(round(bottom))),
+                              (0, 255, 0),
+                              4)
 
+        cv2.imwrite(directory, image)
         return image

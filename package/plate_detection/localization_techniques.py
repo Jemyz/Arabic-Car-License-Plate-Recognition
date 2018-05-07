@@ -50,8 +50,8 @@ class Localize(object):
 
         if not localization_object:
             localization_object = self.acquire_localization_strategy(localization_strategy)
-
-        value_array = cv2.rectangle(image, (box[1], box[0]), (box[3], box[2]), (0, 0, 255), 6)
+        print(box)
+        value_array = cv2.rectangle(image, (box[0], box[3]), (box[1], box[2]), (0, 0, 255), 4)
         cv2.imwrite(directory, value_array)
 
         if not get_object:

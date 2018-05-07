@@ -149,7 +149,7 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
         print('%s (%s)' % (e, type(e)))
         return ["error", "", "error happened while classifying the plate please try again"]
 
-    image_new_name = "classification - " + note + "- " + image_name
+    image_new_name = "classification - " + note + "- " + fs.generate_filename(image_name)
     new_path = os.path.join(settings.MEDIA_ROOT, image_new_name)
     os.rename(path, new_path)
 

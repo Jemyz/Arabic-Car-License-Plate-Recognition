@@ -103,8 +103,7 @@ class TemplateMatching(ClassificationAbstract):
 
         for imgPath in glob.glob(self.dataset_path + '/**/*.*'):
             try:
-                image = imread(imgPath)
-                image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+                image = imread(imgPath, mode='L')
                 image = np.asarray(image)
                 image = cv2.resize(image, (self.width, self.height))
                 temp_dataset.append(image)
