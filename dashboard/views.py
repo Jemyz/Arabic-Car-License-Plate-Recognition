@@ -36,89 +36,106 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
     path = os.path.join(settings.MEDIA_ROOT, image_name)
     note = ""
     localization_object = None
+    localization_class = None
     segmentation_object = None
+    segmentation_class = None
     classification_object = None
+    classification_class = None
+
     # --------------------localization handling----------------------
+    try:
+        if localization_type in localization_strategies and not (localization_type == "None"):
+            localization_class = getattr(package.localizers, localization_type)
+            [box, vehicle_image], localization_object = localize.localize(path,
+                                                                          localization_strategy=localization_class,
+                                                                          get_object=True)
 
-    if localization_type in localization_strategies and not (localization_type == "None"):
-        localization_class = getattr(package.localizers, localization_type)
-        [box, vehicle_image], localization_object = localize.localize(path, localization_strategy=localization_class,
-                                                                      get_object=True)
+            if vehicle_image is not None:
+                vehicle_image = cv2.cvtColor(vehicle_image, cv2.COLOR_RGB2BGR)
 
-        if vehicle_image is not None:
-            vehicle_image = cv2.cvtColor(vehicle_image, cv2.COLOR_RGB2BGR)
+            if box is None:
+                raise AssertionError
+            else:
+                image = vehicle_image[box[2]:box[3], box[0]:box[1]]
 
-        if box is None:
-            return ["error", "", "no plate found"]
+            if segmentation_type == "None":
+                note = str(time.strftime("%d/%m/%Y")) + " localization for " + image_name
+                localized_name = "localization - " + fs.generate_filename(image_name)
+
+                if not (localized_name == image_name):
+                    fs.delete(image_name)
+
+                directory = os.path.join(settings.MEDIA_ROOT, localized_name)
+                localize.visualize(vehicle_image, directory, box,
+                                   localization_strategy=localization_class,
+                                   localization_object=localization_object)
+                return ["localization", fs.url(localized_name), note]
+            localize.append_localization_strategy(localization_class, localization_object)
+        elif not (localization_type == "None"):
+            raise ValueError
         else:
-            image = vehicle_image[box[2]:box[3], box[0]:box[1]]
-
-        if segmentation_type == "None":
-            note = str(time.strftime("%d/%m/%Y")) + " localization for " + image_name
-            localized_name = "localization - " + fs.generate_filename(image_name)
-
-            if not (localized_name == image_name):
-                fs.delete(image_name)
-
-            directory = os.path.join(settings.MEDIA_ROOT, localized_name)
-            localize.visualize(vehicle_image, directory, box,
-                               localization_strategy=localization_class,
-                               localization_object=localization_object)
-            return ["localization", fs.url(localized_name), note]
-        localize.append_localization_strategy(localization_class, localization_object)
-    elif not (localization_type == "None"):
-        raise ValueError
-    else:
-        image = cv2.imread(path)
+            image = cv2.imread(path)
+    except:
+        if localization_object is not None and localization_class:
+            localize.append_localization_strategy(localization_class, localization_object)
+        return ["error", "", "error happened while detecting the plate please try again"]
 
     # --------------------segmentation handling-------------------------
+    try:
+        if segmentation_type in segmentation_strategies:
+            segmentation_class = getattr(package.segmenters, segmentation_type)
+            [images, boxes, classes, scores], segmentation_object = segmenter.segment(image,
+                                                                                      segmentation_strategy=segmentation_class,
+                                                                                      get_object=True)
 
-    if segmentation_type in segmentation_strategies:
-        segmentation_class = getattr(package.segmenters, segmentation_type)
-        [images, boxes, classes, scores], segmentation_object = segmenter.segment(image,
-                                                                                  segmentation_strategy=segmentation_class,
-                                                                                  get_object=True)
+            if classification_type == "None":
+                note = str(time.strftime("%d/%m/%Y")) + " segmentation for " + image_name
+                segmented_name = "segmentation - " + fs.generate_filename(image_name)
 
-        if classification_type == "None":
-            note = str(time.strftime("%d/%m/%Y")) + " segmentation for " + image_name
-            segmented_name = "segmentation - " + fs.generate_filename(image_name)
+                if not (segmented_name == image_name):
+                    fs.delete(image_name)
 
-            if not (segmented_name == image_name):
-                fs.delete(image_name)
+                directory = os.path.join(settings.MEDIA_ROOT, segmented_name)
+                segmenter.visualize(image, directory, boxes, classes, scores,
+                                    segmentation_object=segmentation_object,
+                                    segmentation_strategy=segmentation_class)
 
-            directory = os.path.join(settings.MEDIA_ROOT, segmented_name)
-            segmenter.visualize(image, directory, boxes, classes, scores,
-                                segmentation_object=segmentation_object,
-                                segmentation_strategy=segmentation_class)
+                return ["segmentation", fs.url(segmented_name), note]
 
-            return ["segmentation", fs.url(segmented_name), note]
-
-        segmenter.append_segmentation_strategy(segmentation_class, segmentation_object)
-    else:
-        raise ValueError
+            segmenter.append_segmentation_strategy(segmentation_class, segmentation_object)
+        else:
+            raise ValueError
+    except:
+        if segmentation_object is not None and segmentation_class:
+            segmenter.append_segmentation_strategy(segmentation_class, segmentation_object)
+        return ["error", "", "error happened while segmenting the plate please try again"]
 
     # ---------------------classification handling---------------------------
     print("classifying")
+    try:
+        if classification_type in classification_strategies:
+            classification_object = None
+            classification_class = getattr(package.classifiers, classification_type)
 
-    if classification_type in classification_strategies:
-        classification_object = None
-        classification_class = getattr(package.classifiers, classification_type)
+            for image_index in range(len(images)):
+                [predicted_label, prob], classification_object = classifier.classify(images[image_index],
+                                                                                     int(classes[image_index]),
+                                                                                     classification_strategy=classification_class,
+                                                                                     get_object=True,
+                                                                                     classification_object=classification_object)
 
-        for image_index in range(len(images)):
-            [predicted_label, prob], classification_object = classifier.classify(images[image_index],
-                                                                                 int(classes[image_index]),
-                                                                                 classification_strategy=classification_class,
-                                                                                 get_object=True,
-                                                                                 classification_object=classification_object)
-
-            # cv2.imshow("image", images[image_index])
-            # cv2.waitKey()
-            note += str(predicted_label)
-            # print(int(classes[image_index]))
-            # print(note)
-        classifier.append_classification_strategy(classification_class, classification_object)
-    else:
-        raise ValueError
+                # cv2.imshow("image", images[image_index])
+                # cv2.waitKey()
+                note += str(predicted_label)
+                # print(int(classes[image_index]))
+                # print(note)
+            classifier.append_classification_strategy(classification_class, classification_object)
+        else:
+            raise ValueError
+    except:
+        if classification_object is not None and classification_class:
+            classifier.append_classification_strategy(classification_class, classification_object)
+        return ["error", "", "error happened while classifying the plate please try again"]
 
     image_new_name = "classification - " + note + "- " + image_name
     new_path = os.path.join(settings.MEDIA_ROOT, image_new_name)
