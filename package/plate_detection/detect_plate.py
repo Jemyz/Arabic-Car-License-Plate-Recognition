@@ -20,13 +20,11 @@ class PlateDetection(LocalizationAbstract):
 
     def find(self, img):
         _, _, box, _, image = self.vd.get_largest_object(img=img)
-        if box is None:
-            return None, image
         vehicle_image = image[
                             int(box[0] * image.shape[0]):int(box[2] * image.shape[0]),
                             int(box[1] * image.shape[1]):int(box[3] * image.shape[1])
-                        ]
-        bounds, img = self.pl.get_bounds(img=vehicle_image)
+                        ] if box is not None else image
+        bounds, img = self.pl.get_bounds(img=vehicle_image, area_filter=True)
         return self.pc.get_largest_plate(np.asarray([bound_to_box(bound) for bound in bounds]), vehicle_image)
 
 
