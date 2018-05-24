@@ -14,7 +14,7 @@ import time
 
 localization_strategies = {"PlateDetection": 1}
 segmentation_strategies = {"Inception": 1}
-classification_strategies = {"CNN": 1, "ImageNet": 1, "SVM": 1, "TemplateMatching": 1}
+classification_strategies = {"CNN": 1, "ImageNet": 1, "SVM": 1, "TemplateMatching": 1, "Inception":1}
 # classification_strategies = {"TemplateMatching": 1}
 
 segmenter = package.segmenter(segmentation_strategies)
