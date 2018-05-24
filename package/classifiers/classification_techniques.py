@@ -1,9 +1,10 @@
 from package.classifiers.cnn import CNN
 from threading import Semaphore
 from package.classifiers.classification_abstract import ClassificationAbstract
-from package.classifiers.Svm import Svm
+from package.classifiers.svm import SVM
 from package.classifiers.imagenet import ImageNet
-from package.classifiers.TemplateMatching import TemplateMatching
+from package.classifiers.template_matching import TemplateMatching
+from package.classifiers.inception import Inception
 
 
 class Classifier(object):
