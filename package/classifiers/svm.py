@@ -13,7 +13,7 @@ from package.classifiers.classification_abstract import ClassificationAbstract
 import os
 
 
-class Svm(ClassificationAbstract):
+class SVM(ClassificationAbstract):
 
     def __init__(self):
 
@@ -36,14 +36,14 @@ class Svm(ClassificationAbstract):
         self.type = ""
 
         filename = 'svm_char_50_linear'
-        self.path_to_model = os.path.join(os.getcwd(), "package", "classifiers", "svm", filename)
+        self.path_to_model = os.path.join(os.getcwd(), "package", "classifiers", "models/SVM/stable/", filename)
         # load the model from disk
         loaded_model = pickle.load(open(self.path_to_model, 'rb'))
         self.clfChar = loaded_model
 
         # load the model from disk
         filename = 'svm_num_50_linear'
-        self.path_to_model = os.path.join(os.getcwd(), "package", "classifiers", "svm", filename)
+        self.path_to_model = os.path.join(os.getcwd(), "package", "classifiers", "models/SVM/stable/", filename)
         loaded_model = pickle.load(open(self.path_to_model, 'rb'))
         self.clfNum = loaded_model
 

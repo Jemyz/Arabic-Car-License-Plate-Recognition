@@ -14,7 +14,7 @@ import time
 
 localization_strategies = {"PlateDetection": 1}
 segmentation_strategies = {"Inception": 1}
-classification_strategies = {"CNN": 1, "ImageNet": 1, "Svm": 1, "TemplateMatching": 1}
+classification_strategies = {"CNN": 1, "ImageNet": 1, "SVM": 1, "TemplateMatching": 1}
 # classification_strategies = {"TemplateMatching": 1}
 
 segmenter = package.segmenter(segmentation_strategies)
@@ -125,19 +125,23 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
         if classification_type in classification_strategies:
             classification_object = None
             classification_class = getattr(package.classifiers, classification_type)
-
+            print(len(boxes))
+            print(len(images))
             for image_index in range(len(images)):
                 [predicted_label, prob], classification_object = classifier.classify(images[image_index],
                                                                                      int(classes[image_index]),
                                                                                      classification_strategy=classification_class,
                                                                                      get_object=True,
                                                                                      classification_object=classification_object)
-
+                print(predicted_label)
                 # cv2.imshow("image", images[image_index])
                 # cv2.waitKey()
-                note += str(predicted_label)
+                # import scipy.misc
+                # scipy.misc.imsave(str(image_index) +'.jpg', images[image_index])
+                note += str(predicted_label).strip()
                 # print(int(classes[image_index]))
                 # print(note)
+            print(note)
             classifier.append_classification_strategy(classification_class, classification_object)
         else:
             raise ValueError
