@@ -18,7 +18,7 @@ class ImageNet(ClassificationAbstract):
     def __init__(self):
 
         self.projectpath = os.path.join(os.getcwd(), "package", "classifiers")
-        self.model_dir = os.path.join(os.getcwd(), "package", "classifiers", "models/")
+        self.model_dir = os.path.join(os.getcwd(), "package", "classifiers", "models/ImageNet/")
 
         self.HEIGHT = 48
         self.WIDTH = 48
@@ -252,7 +252,6 @@ class ImageNet(ClassificationAbstract):
         features = np.reshape(features, (1, 7 * 7 * 512))
 
         if image_type == 1:
-            print("letter")
             with self.graph.as_default():
                 with self.session.as_default():
                     prediction = self.letters_model.predict_classes(features)[0]
@@ -260,7 +259,6 @@ class ImageNet(ClassificationAbstract):
             pred_label = self.letters_classes[prediction]
 
         elif image_type == 2:
-            print("number")
             with self.graph.as_default():
                 with self.session.as_default():
                     prediction = self.numbers_model.predict_classes(features)[0]
