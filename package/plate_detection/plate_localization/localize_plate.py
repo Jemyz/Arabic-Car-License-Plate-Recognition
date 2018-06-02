@@ -10,7 +10,7 @@ class PlateLocalization(object):
         self.window_sizes = [(i, j) for i in range(2, window_max_size[0], window_width_step)
                              for j in range(2, window_max_size[1], window_height_step)]
 
-    def get_bounds(self, img, area_filter=True, area_ratio=0.008, area_range=(1, 7)):
+    def get_bounds(self, img, area_filter=True, area_ratio=0.08, area_range=(0.1, 10)):
         img = read_image(img)
         bounds = sobel_edge_method(
             img=img,

@@ -78,24 +78,32 @@ class ObjectDetection(object):
                 output_dict['detection_masks'] = output_dict['detection_masks'][0]
         return output_dict
 
-    def get_objects(self, img):
+    def get_objects(self, img, view=False):
         img = read_image(img)
         output_dict = self._detect_objects(img)
+        if view:
+            show(
+                img=img.copy(),
+                boxes=output_dict['detection_boxes'],
+                labels=output_dict['detection_classes'],
+                scores=output_dict['detection_scores'],
+                masks=output_dict.get('detection_masks'),
+                thresh=self.thresh
+            )
         # filtering by classes
         if self.classes is not None:
             class_filtered = np.isin(output_dict['detection_classes'], self.classes)
+            output_dict['detection_scores'] = output_dict['detection_scores'][class_filtered]
+            output_dict['detection_classes'] = output_dict['detection_classes'][class_filtered]
+            output_dict['detection_boxes'] = output_dict['detection_boxes'][class_filtered]
         # filtering by scores
-        scores = output_dict['detection_scores'][class_filtered] if self.classes else output_dict['detection_scores']
-        scores_filtered = np.where(scores > self.thresh)
-        labels = output_dict['detection_classes'][scores_filtered]
-        scores = output_dict['detection_scores'][scores_filtered]
-        boxes = output_dict['detection_boxes'][scores_filtered]
-        masks = output_dict.get('detection_masks')
-        return labels, scores, boxes, masks, img
+        scores_filtered = np.where(output_dict['detection_scores'] > self.thresh)
+        return output_dict['detection_classes'][scores_filtered], output_dict['detection_scores'][scores_filtered], \
+            output_dict['detection_boxes'][scores_filtered], output_dict.get('detection_masks'), img
 
-    def get_largest_object(self, img):
+    def get_largest_object(self, img, view=False):
         """return the object with largest area"""
-        labels, scores, boxes, masks, img = self.get_objects(img)
+        labels, scores, boxes, masks, img = self.get_objects(img, view)
         if boxes.size > 0:
             # if any of required classes exist, return the largest one.
             areas = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
@@ -104,22 +112,33 @@ class ObjectDetection(object):
         return None, None, None, None, img
 
 
+def show(img, boxes, labels, scores, masks, thresh):
+    vis_util.visualize_boxes_and_labels_on_image_array(
+        img,
+        boxes,
+        labels,
+        scores,
+        category_index,
+        instance_masks=masks,
+        use_normalized_coordinates=True,
+        line_thickness=2,
+        min_score_thresh=thresh
+    )
+    imshow(img)
+
+
 def run(args):
     od = ObjectDetection(args.thresh, args.classes)
     labels, scores, boxes, masks, image = od.get_largest_object(args.image)
     if args.view:
-        vis_util.visualize_boxes_and_labels_on_image_array(
-            image,
-            boxes,
-            labels,
-            scores,
-            category_index,
-            instance_masks=masks,
-            use_normalized_coordinates=True,
-            line_thickness=2,
-            min_score_thresh=args.thresh
+        show(
+            img=image.copy(),
+            boxes=boxes,
+            labels=labels,
+            scores=scores,
+            masks=masks,
+            thresh=args.thresh
         )
-        imshow(image)
 
 
 if __name__ == '__main__':
