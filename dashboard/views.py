@@ -12,9 +12,10 @@ import package
 import json
 import time
 
-localization_strategies = {"PlateDetection": 1}
+localization_strategies = {"PlateDetection": 1, "ObjectDetection": 1}
 segmentation_strategies = {"Inception": 1}
 classification_strategies = {"CNN": 1, "ImageNet": 1, "Svm": 1, "TemplateMatching": 1}
+
 # classification_strategies = {"TemplateMatching": 1}
 
 segmenter = package.segmenter(segmentation_strategies)
@@ -46,7 +47,7 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
     try:
         if localization_type in localization_strategies and not (localization_type == "None"):
             localization_class = getattr(package.localizers, localization_type)
-            [box, vehicle_image], localization_object = localize.localize(path,
+            [[box, vehicle_image], class_detected, prob], localization_object = localize.localize(path,
                                                                           localization_strategy=localization_class,
                                                                           get_object=True)
 
@@ -66,7 +67,7 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
                     fs.delete(image_name)
 
                 directory = os.path.join(settings.MEDIA_ROOT, localized_name)
-                localize.visualize(vehicle_image, directory, box,
+                localize.visualize(vehicle_image, directory, box, class_detected,
                                    localization_strategy=localization_class,
                                    localization_object=localization_object)
 
@@ -83,6 +84,7 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
 
         if localization_object is not None and localization_class:
             localize.append_localization_strategy(localization_class, localization_object)
+        fs.delete(image_name)
         print('%s (%s)' % (e, type(e)))
         return ["error", "", "error happened while detecting the plate please try again"]
 
@@ -116,6 +118,7 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
 
         if segmentation_object is not None and segmentation_class:
             segmenter.append_segmentation_strategy(segmentation_class, segmentation_object)
+        fs.delete(image_name)
         print('%s (%s)' % (e, type(e)))
         return ["error", "", "error happened while segmenting the plate please try again"]
 
@@ -135,6 +138,7 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
 
                 # cv2.imshow("image", images[image_index])
                 # cv2.waitKey()
+                #cv2.imwrite("./" + image_index + ".jpg", images[image_index])
                 note += str(predicted_label)
                 # print(int(classes[image_index]))
                 # print(note)
@@ -146,6 +150,7 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
 
         if classification_object is not None and classification_class:
             classifier.append_classification_strategy(classification_class, classification_object)
+        fs.delete(image_name)
         print('%s (%s)' % (e, type(e)))
         return ["error", "", "error happened while classifying the plate please try again"]
 

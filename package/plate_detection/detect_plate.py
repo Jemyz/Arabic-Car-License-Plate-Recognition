@@ -27,7 +27,7 @@ class PlateDetection(LocalizationAbstract):
                             int(box[1] * image.shape[1]):int(box[3] * image.shape[1])
                         ]
         bounds, img = self.pl.get_bounds(img=vehicle_image)
-        return self.pc.get_largest_plate(np.asarray([bound_to_box(bound) for bound in bounds]), vehicle_image)
+        return self.pc.get_largest_plate(np.asarray([bound_to_box(bound) for bound in bounds]), vehicle_image), 1, 1
 
 
 def run(args):
