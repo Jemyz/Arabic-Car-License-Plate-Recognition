@@ -13,15 +13,36 @@ from package.classifiers.classification_abstract import ClassificationAbstract
 import cv2
 
 
+from keras.applications import VGG16
+from keras.applications import VGG19
+from keras.applications import Xception
+from keras.applications import InceptionV3
+from keras.applications import InceptionResNetV2
+from keras.applications import NASNetLarge
+from keras.applications import ResNet50
+from keras.applications import DenseNet201
+from keras.applications import DenseNet169
+from keras.applications import DenseNet121
+from keras.applications import MobileNet  # 128
+from keras.applications import NASNetMobile  # 224
+
+
 class ImageNet(ClassificationAbstract):
 
-    def __init__(self):
+    def __init__(self,feature_class):
 
         self.projectpath = os.path.join(os.getcwd(), "package", "classifiers")
         self.model_dir = os.path.join(os.getcwd(), "package", "classifiers", "models/ImageNet/")
 
-        self.HEIGHT = 48
-        self.WIDTH = 48
+        self.size_dict = {MobileNet: [128, 128], NASNetMobile: [224, 224],
+                          DenseNet121: [221, 221], DenseNet169: [221, 221],
+                          DenseNet201: [221, 221], ResNet50: [197, 197],
+                          NASNetLarge: [331, 331], Xception: [71, 71],
+                          InceptionV3: [139, 139], InceptionResNetV2: [139, 139],
+                          VGG16: [48, 48], VGG19: [48, 48]}
+
+        self.HEIGHT = self.size_dict[feature_class][0]
+        self.WIDTH = self.size_dict[feature_class][1]
 
         self.epochs = 100
         self.batch_size = 64
@@ -37,10 +58,11 @@ class ImageNet(ClassificationAbstract):
         with self.graph.as_default():
             self.session = tf.Session()
             with self.session.as_default():
-                self.vgg_conv = keras.applications.VGG16(include_top=False,
-                                                         weights='imagenet',
-                                                         input_shape=(self.HEIGHT, self.WIDTH, 3))
+                self.feature_model = feature_class(include_top=False,
+                                                   weights='imagenet',
+                                                   input_shape=(self.HEIGHT, self.WIDTH, 3))
 
+                self.feature_model_output_shape = self.feature_model.get_output_shape_at(-1)
                 self.letters_model = self.model_loader(self.letters_model_path)[0]
                 self.numbers_model = self.model_loader(self.numbers_model_path)[0]
 
@@ -136,7 +158,7 @@ class ImageNet(ClassificationAbstract):
             i = 0
             for inputs_batch, labels_batch in generator:
 
-                features_batch = self.vgg_conv.predict(inputs_batch)
+                features_batch = self.feature_model.predict(inputs_batch)
                 features[i * self.batch_size: (i + 1) * self.batch_size] = features_batch
                 labels[i * self.batch_size: (i + 1) * self.batch_size] = labels_batch
                 i += 1
@@ -241,15 +263,19 @@ class ImageNet(ClassificationAbstract):
 
     def predict(self, image, image_type):
         keras.backend.set_session(self.session)
+
+        image = cv2.resize(image, (self.WIDTH, self.HEIGHT))
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB) / 255
 
-        features = np.zeros(shape=(1, 7, 7, 512))
+        features = np.zeros(shape=(1, self.feature_model_output_shape[1],
+                                   self.feature_model_output_shape[2], self.feature_model_output_shape[3]))
 
         with self.graph.as_default():
             with self.session.as_default():
-                features[0:1] = self.vgg_conv.predict(np.array([image]))
+                features[0:1] = self.feature_model.predict(np.array([image]))
 
-        features = np.reshape(features, (1, 7 * 7 * 512))
+        features = np.reshape(features, (1, self.feature_model_output_shape[1] *
+                                         self.feature_model_output_shape[2] * self.feature_model_output_shape[3]))
 
         if image_type == 1:
             with self.graph.as_default():
@@ -268,3 +294,4 @@ class ImageNet(ClassificationAbstract):
             raise TypeError
         probability = prob[0][prediction]
         return pred_label, probability
+
