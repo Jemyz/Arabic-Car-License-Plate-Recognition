@@ -8,7 +8,7 @@ media/
 .idea
 *.pb
 *.hdf5
-svm/
 *.pickle
 plates_letters/
 plates_numbers/
+package/classifiers/models/training/

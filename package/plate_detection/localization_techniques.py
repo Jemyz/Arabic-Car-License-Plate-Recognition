@@ -2,6 +2,7 @@ import cv2
 from package.plate_detection.localization_abstract import LocalizationAbstract
 from threading import Semaphore
 from package.plate_detection.detect_plate import PlateDetection
+from package.plate_detection.object_detection_plate import ObjectDetection
 
 
 class Localize(object):
@@ -32,7 +33,7 @@ class Localize(object):
             else:
                 raise TypeError
 
-    def localize(self, image, localization_strategy=PlateDetection, get_object=False, localization_object=None):
+    def localize(self, image, localization_strategy=ObjectDetection, get_object=False, localization_object=None):
 
         if not localization_object:
             localization_object = self.acquire_localization_strategy(localization_strategy)
@@ -45,13 +46,19 @@ class Localize(object):
 
         return value_array, localization_object
 
-    def visualize(self, image, directory, box, localization_strategy=PlateDetection, get_object=False,
+    def visualize(self, image, directory, box, class_detected, localization_strategy=ObjectDetection, get_object=False,
                   localization_object=None):
 
         if not localization_object:
             localization_object = self.acquire_localization_strategy(localization_strategy)
         print(box)
-        value_array = cv2.rectangle(image, (box[0], box[3]), (box[1], box[2]), (0, 0, 255), 4)
+        print(int(class_detected))
+
+        if int(class_detected) == 1:
+            value_array = cv2.rectangle(image, (box[0], box[3]), (box[1], box[2]), (0, 0, 255), 6)
+        else:
+            value_array = cv2.rectangle(image, (box[0], box[3]), (box[1], box[2]), (255, 0, 0), 6)
+
         cv2.imwrite(directory, value_array)
 
         if not get_object:

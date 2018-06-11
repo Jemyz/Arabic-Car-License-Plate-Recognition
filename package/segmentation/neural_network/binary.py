@@ -1,7 +1,5 @@
 import numpy as np
 import cv2
-from scipy import misc
-from package.segmentation.neural_network import imgpre
 
 
 def binary_otsu(img_gray):
@@ -10,7 +8,6 @@ def binary_otsu(img_gray):
     img_thresh = cv2.threshold(img_gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
     img_thresh = cv2.resize(img_thresh, (48, 48))
     nonzero = np.count_nonzero(img_thresh)
-    # for my logic should be - 200=
     if nonzero - 200 > (48 * 48) - nonzero:
         img_thresh = cv2.bitwise_not(img_thresh)
     return img_thresh
