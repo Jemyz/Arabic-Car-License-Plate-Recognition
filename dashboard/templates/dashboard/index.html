@@ -26,7 +26,7 @@ active
                     <div class="col-xs-4">
                         <div class="form-group">
                             <select class="selectpicker form-control" name="localization">
-                                <option value="None" selected disabled hidden >localization</option>
+                                <option value="None" selected disabled hidden >No localization</option>
                                 {% for strategy in localization_strategies %}
                                 <option value="{{strategy}}">{{strategy}}</option>
                                 {% endfor %}
@@ -36,7 +36,7 @@ active
                     <div class="col-xs-4">
                         <div class="form-group">
                             <select class="selectpicker form-control" name="segmentation">
-                                <option value="None" selected disabled hidden >segmentaion</option>
+                                <option value="None" selected>No Segmentation</option>
                                 {% for strategy in segmentation_strategies %}
                                 <option value="{{strategy}}">{{strategy}}</option>
                                 {% endfor %}
@@ -47,7 +47,7 @@ active
                     <div class="col-xs-4">
                         <div class="form-group">
                             <select class="selectpicker form-control" name="classification">
-                                <option value="None" selected disabled hidden>classification</option>
+                                <option value="None" selected>No Classification</option>
                                  {% for strategy in classification_strategies %}
                                 <option value="{{strategy}}">{{strategy}}</option>
                                 {% endfor %}
