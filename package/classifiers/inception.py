@@ -45,6 +45,8 @@ class Inception(ClassificationAbstract):
 
     def predict(self, image, type):
         self.load_graph(type)
+
+        image = cv2.resize(image, (48, 48))
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
         with tf.Session() as sess:
             soft_max_tensor = sess.graph.get_tensor_by_name('pnp/final_result:0')

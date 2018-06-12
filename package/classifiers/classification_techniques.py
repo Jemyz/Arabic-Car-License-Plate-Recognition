@@ -74,7 +74,7 @@ class Classifier(object):
 
         value_array = classification_object.predict(image, type_image)
 
-        if not get_object:
+        if not get_object and not load_model:
             self.append_classification_strategy(classification_strategy, classification_object)
             return value_array
 

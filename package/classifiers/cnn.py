@@ -209,6 +209,8 @@ class CNN(ClassificationAbstract):
 
     def predict(self, image, type):
         keras.backend.set_session(self.session)
+
+        image = cv2.resize(image, (self.WIDTH, self.HEIGHT))
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB) / 255
 
         image = np.array([image])
