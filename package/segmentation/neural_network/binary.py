@@ -6,9 +6,10 @@ def binary_otsu(img_gray):
     img_gray = cv2.GaussianBlur(img_gray, (5, 5), 0)
     img_gray = cv2.bitwise_not(img_gray)
     img_thresh = cv2.threshold(img_gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-    img_thresh = cv2.resize(img_thresh, (48, 48))
+    pixels_total = img_thresh.shape[1] * img_thresh.shape[0]
+
     nonzero = np.count_nonzero(img_thresh)
-    if nonzero - 200 > (48 * 48) - nonzero:
+    if nonzero - (9/pixels_total) * 100 > pixels_total - nonzero:
         img_thresh = cv2.bitwise_not(img_thresh)
     return img_thresh
 

@@ -4,6 +4,8 @@ from threading import Semaphore
 from package.plate_detection.detect_plate import PlateDetection
 from package.plate_detection.object_detection_plate import ObjectDetection
 
+model_map = {}
+
 
 class Localize(object):
     def __init__(self, strategies=None):
@@ -27,16 +29,29 @@ class Localize(object):
             if size == 0:
                 raise ValueError
 
-            if issubclass(strategy, LocalizationAbstract):
-                self.__action[strategy] = [strategy() for _ in range(size)]
+            if strategy in model_map or issubclass(strategy, LocalizationAbstract):
+                if strategy in model_map:
+                    localization_strategy = model_map[strategy](strategy)
+                else:
+                    localization_strategy = strategy()
+
+                self.__action[strategy] = [localization_strategy for _ in range(size)]
                 self.__semaphores[strategy] = Semaphore(value=size)
             else:
                 raise TypeError
 
-    def localize(self, image, localization_strategy=ObjectDetection, get_object=False, localization_object=None):
+    def localize(self, image, localization_strategy=ObjectDetection, get_object=False, localization_object=None,
+                 load_model=False):
 
         if not localization_object:
-            localization_object = self.acquire_localization_strategy(localization_strategy)
+            if load_model:
+
+                if localization_strategy in model_map:
+                    localization_object = model_map[localization_strategy](localization_strategy)
+                else:
+                    localization_object = localization_strategy()
+            else:
+                localization_object = self.acquire_localization_strategy(localization_strategy)
 
         value_array = localization_object.find(image)
 

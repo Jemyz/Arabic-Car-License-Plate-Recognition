@@ -14,7 +14,11 @@ import time
 
 localization_strategies = {"PlateDetection": 1, "ObjectDetection": 1}
 segmentation_strategies = {"Inception": 1}
-classification_strategies = {"CNN": 1, "ImageNet": 1, "SVM": 1, "TemplateMatching": 1, "Inception": 1}
+classification_strategies = {"CNN": 1, "SVM": 1, "TemplateMatching": 1}
+# classification_strategies = {"CNN": 1, "VGG16":1, "SVM": 1, "TemplateMatching": 1}
+classification_unloaded = ["VGG16"]
+segmentation_unloaded = []
+localization_unloaded = []
 
 segmenter = package.segmenter(segmentation_strategies)
 classifier = package.classifier(classification_strategies)
@@ -43,11 +47,18 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
 
     # --------------------localization handling----------------------
     try:
-        if localization_type in localization_strategies and not (localization_type == "None"):
+
+        if (localization_type in localization_strategies or localization_type in localization_unloaded) and not (
+                localization_type == "None"):
+            load_object = False
+            if localization_type in localization_unloaded:
+                load_object = True
+
             localization_class = getattr(package.localizers, localization_type)
             [[box, vehicle_image], class_detected, prob], localization_object = localize.localize(path,
-                                                                          localization_strategy=localization_class,
-                                                                          get_object=True)
+                                                                                                  load_model=load_object,
+                                                                                                  localization_strategy=localization_class,
+                                                                                                  get_object=True)
 
             if vehicle_image is not None:
                 vehicle_image = cv2.cvtColor(vehicle_image, cv2.COLOR_RGB2BGR)
@@ -71,7 +82,8 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
 
                 return ["localization", fs.url(localized_name), note]
 
-            localize.append_localization_strategy(localization_class, localization_object)
+            if localization_type not in localization_unloaded:
+                localize.append_localization_strategy(localization_class, localization_object)
 
         elif not (localization_type == "None"):
             raise ValueError
@@ -88,9 +100,14 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
 
     # --------------------segmentation handling-------------------------
     try:
-        if segmentation_type in segmentation_strategies:
+        if segmentation_type in segmentation_strategies or segmentation_type in segmentation_unloaded:
+            load_object = False
+            if segmentation_type in segmentation_unloaded:
+                load_object = True
+
             segmentation_class = getattr(package.segmenters, segmentation_type)
             [images, boxes, classes, scores], segmentation_object = segmenter.segment(image,
+                                                                                      load_model=load_object,
                                                                                       segmentation_strategy=segmentation_class,
                                                                                       get_object=True)
 
@@ -107,8 +124,8 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
                                     segmentation_strategy=segmentation_class)
 
                 return ["segmentation", fs.url(segmented_name), note]
-
-            segmenter.append_segmentation_strategy(segmentation_class, segmentation_object)
+            if segmentation_type not in segmentation_unloaded:
+                segmenter.append_segmentation_strategy(segmentation_class, segmentation_object)
         else:
             raise ValueError
 
@@ -123,28 +140,35 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
     # ---------------------classification handling---------------------------
     print("classifying")
     try:
-        if classification_type in classification_strategies:
+        if classification_type in classification_strategies or classification_type in classification_unloaded:
             classification_object = None
             classification_class = getattr(package.classifiers, classification_type)
-            print(len(boxes))
-            print(len(images))
+            load_object = False
+
+            if classification_type in classification_unloaded:
+                load_object = True
+
             for image_index in range(len(images)):
                 [predicted_label, prob], classification_object = classifier.classify(images[image_index],
                                                                                      int(classes[image_index]),
+                                                                                     load_model=load_object,
                                                                                      classification_strategy=classification_class,
                                                                                      get_object=True,
                                                                                      classification_object=classification_object)
                 print(predicted_label)
+                load_object = False
                 # cv2.imshow("image", images[image_index])
                 # cv2.waitKey()
-                #cv2.imwrite("./" + image_index + ".jpg", images[image_index])
+                # cv2.imwrite("./" + image_index + ".jpg", images[image_index])
                 # import scipy.misc
                 # scipy.misc.imsave(str(image_index) +'.jpg', images[image_index])
                 note += str(predicted_label).strip()
                 # print(int(classes[image_index]))
                 # print(note)
             print(note)
-            classifier.append_classification_strategy(classification_class, classification_object)
+
+            if classification_type not in classification_unloaded:
+                classifier.append_classification_strategy(classification_class, classification_object)
         else:
             raise ValueError
 
@@ -208,9 +232,9 @@ def index(request):
         print('%s (%s)' % (e, type(e)))
         return HttpResponse("error")
 
-    view_dict = {"segmentation_strategies": segmentation_strategies.keys(),
-                 "classification_strategies": classification_strategies.keys(),
-                 "localization_strategies": localization_strategies.keys()}
+    view_dict = {"segmentation_strategies": [*segmentation_strategies, *segmentation_unloaded],
+                 "classification_strategies": [*classification_strategies, *classification_unloaded],
+                 "localization_strategies": [*localization_strategies, *localization_unloaded]}
 
     return render(request, 'dashboard/index.html', view_dict)
 

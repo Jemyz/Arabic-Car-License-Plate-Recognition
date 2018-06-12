@@ -2,6 +2,8 @@ from package.segmentation.segmentaion_abstract import SegmentationAbstract
 from package.segmentation.Inception import Inception
 from threading import Semaphore
 
+model_map = {}
+
 
 class Segmenter(object):
     def __init__(self, strategies=None):
@@ -25,16 +27,29 @@ class Segmenter(object):
             if size == 0:
                 raise ValueError
 
-            if issubclass(strategy, SegmentationAbstract):
-                self.__action[strategy] = [strategy() for _ in range(size)]
+            if strategy in model_map or issubclass(strategy, SegmentationAbstract):
+                if strategy in model_map:
+                    segmentation_strategy = model_map[strategy](strategy)
+                else:
+                    segmentation_strategy = strategy()
+
+                self.__action[strategy] = [segmentation_strategy for _ in range(size)]
                 self.__semaphores[strategy] = Semaphore(value=size)
             else:
                 raise TypeError
 
-    def segment(self, image, segmentation_strategy=Inception, get_object=False, segmentation_object=None):
+    def segment(self, image, segmentation_strategy=Inception, get_object=False, segmentation_object=None,
+                load_model=False):
 
         if not segmentation_object:
-            segmentation_object = self.acquire_segmentation_strategy(segmentation_strategy)
+            if load_model:
+
+                if segmentation_strategy in model_map:
+                    segmentation_object = model_map[segmentation_strategy](segmentation_strategy)
+                else:
+                    segmentation_object = segmentation_strategy()
+            else:
+                segmentation_object = self.acquire_segmentation_strategy(segmentation_strategy)
 
         value_array = segmentation_object.find(image)
 
