@@ -1,6 +1,7 @@
 from package.segmentation.segmentaion_abstract import SegmentationAbstract
 from package.segmentation.Inception import Inception
 from threading import Semaphore
+import cv2
 
 model_map = {}
 
@@ -53,25 +54,36 @@ class Segmenter(object):
 
         value_array = segmentation_object.find(image)
 
-        if not get_object:
+        if not get_object and not load_model:
             self.append_segmentation_strategy(segmentation_strategy, segmentation_object)
             return value_array
 
         return value_array, segmentation_object
 
-    def visualize(self, image, directory, boxes=None, classes=None, scores=None, num_classes=2,
-                  segmentation_strategy=Inception, get_object=False, segmentation_object=None):
+    def visualize(self, image, directory, boxes, classes):
 
-        if not segmentation_object:
-            segmentation_object = self.acquire_segmentation_strategy(segmentation_strategy)
+        im_width = image.shape[1]
+        im_height = image.shape[0]
 
-        value_array = segmentation_object.visualize(image, directory, boxes, classes, scores, num_classes)
+        for i in range(len(boxes)):
+            (left, right, top, bottom) = (boxes[i][1] * im_width,
+                                          boxes[i][3] * im_width,
+                                          boxes[i][0] * im_height,
+                                          boxes[i][2] * im_height)
+            if classes[i] == 1:
+                cv2.rectangle(image,
+                              (int(round(left)), int(round(top))),
+                              (int(round(right)), int(round(bottom))),
+                              (255, 0, 0),
+                              4)
+            if classes[i] == 2:
+                cv2.rectangle(image,
+                              (int(round(left)), int(round(top))),
+                              (int(round(right)), int(round(bottom))),
+                              (0, 255, 0),
+                              4)
 
-        if not get_object:
-            self.append_segmentation_strategy(segmentation_strategy, segmentation_object)
-            return value_array
-
-        return value_array, segmentation_object
+        cv2.imwrite(directory, image)
 
     def acquire_segmentation_strategy(self, segmentation_strategy):
         print("lock:value")

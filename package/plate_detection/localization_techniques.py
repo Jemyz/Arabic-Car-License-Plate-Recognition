@@ -55,17 +55,13 @@ class Localize(object):
 
         value_array = localization_object.find(image)
 
-        if not get_object:
+        if not get_object and not load_model:
             self.append_localization_strategy(localization_strategy, localization_object)
             return value_array
 
         return value_array, localization_object
 
-    def visualize(self, image, directory, box, class_detected, localization_strategy=ObjectDetection, get_object=False,
-                  localization_object=None):
-
-        if not localization_object:
-            localization_object = self.acquire_localization_strategy(localization_strategy)
+    def visualize(self, image, directory, box, class_detected):
         print(box)
         print(int(class_detected))
 
@@ -76,11 +72,7 @@ class Localize(object):
 
         cv2.imwrite(directory, value_array)
 
-        if not get_object:
-            self.append_localization_strategy(localization_strategy, localization_object)
-            return value_array
-
-        return value_array, localization_object
+        return value_array
 
     def acquire_localization_strategy(self, localization_strategy):
         self.__semaphores[localization_strategy].acquire()

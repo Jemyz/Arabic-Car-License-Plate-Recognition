@@ -8,6 +8,3 @@ class SegmentationAbstract(object):
     def find(self, image):
         """Required Method"""
         return
-
-    def visualize(self, image, directory, boxes, classes, scores, num_classes):
-        return

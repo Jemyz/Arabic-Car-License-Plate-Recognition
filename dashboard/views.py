@@ -12,7 +12,7 @@ import package
 import json
 import time
 
-localization_strategies = {"PlateDetection": 1, "ObjectDetection": 1}
+localization_strategies = {"ObjectDetection": 1}
 segmentation_strategies = {"Inception": 1}
 classification_strategies = {"CNN": 1, "SVM": 1, "TemplateMatching": 1}
 # classification_strategies = {"CNN": 1, "VGG16":1, "SVM": 1, "TemplateMatching": 1}
@@ -76,9 +76,10 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
                     fs.delete(image_name)
 
                 directory = os.path.join(settings.MEDIA_ROOT, localized_name)
-                localize.visualize(vehicle_image, directory, box, class_detected,
-                                   localization_strategy=localization_class,
-                                   localization_object=localization_object)
+                localize.visualize(vehicle_image, directory, box, class_detected)
+
+                if localization_type not in localization_unloaded:
+                    localize.append_localization_strategy(localization_class, localization_object)
 
                 return ["localization", fs.url(localized_name), note]
 
@@ -119,9 +120,10 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
                     fs.delete(image_name)
 
                 directory = os.path.join(settings.MEDIA_ROOT, segmented_name)
-                segmenter.visualize(image, directory, boxes, classes, scores,
-                                    segmentation_object=segmentation_object,
-                                    segmentation_strategy=segmentation_class)
+                segmenter.visualize(image, directory, boxes, classes)
+
+                if segmentation_type not in segmentation_unloaded:
+                    segmenter.append_segmentation_strategy(segmentation_class, segmentation_object)
 
                 return ["segmentation", fs.url(segmented_name), note]
             if segmentation_type not in segmentation_unloaded:
