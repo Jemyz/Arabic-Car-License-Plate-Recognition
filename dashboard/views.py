@@ -12,11 +12,11 @@ import package
 import json
 import time
 
-localization_strategies = {"ObjectDetection": 1}
+localization_strategies = {"PlateDetection": 1}
 segmentation_strategies = {"Inception": 1}
 classification_strategies = {"CNN": 1, "SVM": 1, "TemplateMatching": 1}
 # classification_strategies = {"CNN": 1, "VGG16":1, "SVM": 1, "TemplateMatching": 1}
-classification_unloaded = ["VGG16"]
+classification_unloaded = ["MobileNet"]
 segmentation_unloaded = []
 localization_unloaded = []
 
@@ -50,13 +50,9 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
 
         if (localization_type in localization_strategies or localization_type in localization_unloaded) and not (
                 localization_type == "None"):
-            load_object = False
-            if localization_type in localization_unloaded:
-                load_object = True
 
             localization_class = getattr(package.localizers, localization_type)
             [[box, vehicle_image], class_detected, prob], localization_object = localize.localize(path,
-                                                                                                  load_model=load_object,
                                                                                                   localization_strategy=localization_class,
                                                                                                   get_object=True)
 

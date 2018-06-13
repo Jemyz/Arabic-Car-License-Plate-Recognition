@@ -35,11 +35,11 @@ class ImageNet(ClassificationAbstract):
         self.model_dir = os.path.join(os.getcwd(), "package", "classifiers", "models/ImageNet/")
 
         self.size_dict = {MobileNet: [128, 128], NASNetMobile: [224, 224],
-                          DenseNet121: [221, 221], DenseNet169: [221, 221],
-                          DenseNet201: [221, 221], ResNet50: [197, 197],
+                          DenseNet121: [224, 224], DenseNet169: [224, 224],
+                          DenseNet201: [224, 224], ResNet50: [197, 197],
                           NASNetLarge: [331, 331], Xception: [71, 71],
                           InceptionV3: [139, 139], InceptionResNetV2: [139, 139],
-                          VGG16: [48, 48], VGG19: [48, 48]}
+                          VGG16: [48, 48], VGG19: [224, 224]}
 
         self.HEIGHT = self.size_dict[feature_class][0]
         self.WIDTH = self.size_dict[feature_class][1]
@@ -50,9 +50,10 @@ class ImageNet(ClassificationAbstract):
 
         self.nTrain = 0
         self.nVal = 0
+        self.feature_class_name = ((feature_class).__name__)
 
-        self.letters_model_path = "stable/letters-weights-improvement-*.hdf5"
-        self.numbers_model_path = "stable/numbers-weights-improvement-*.hdf5"
+        self.letters_model_path = "stable/"+self.feature_class_name+"/letters-weights-improvement-*.hdf5"
+        self.numbers_model_path = "stable/"+self.feature_class_name+"/numbers-weights-improvement-*.hdf5"
 
         self.graph = tf.Graph()
         with self.graph.as_default():
