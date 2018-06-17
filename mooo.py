@@ -1,3 +1,4 @@
+'''
 import os
 import cv2
 import numpy as np
@@ -370,3 +371,4 @@ for f in range(length):
         cv2.imwrite(path_save + name + "l" + images_names[f], horizontal_strip)
 
 # print((images_be/length) *100)
+'''

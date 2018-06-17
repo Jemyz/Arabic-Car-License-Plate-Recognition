@@ -44,4 +44,11 @@ def binarize(image, boxes, classes, scores):
         images.append(binary)
         index += 1
 
+    reverse = False
+    for index_box in range(len(boxes)):
+        if reverse:
+            classes[index_box] = 1
+        elif int(classes[index_box]) == 1:
+            reverse = True
+
     return images

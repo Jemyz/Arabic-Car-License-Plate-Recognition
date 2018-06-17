@@ -12,14 +12,14 @@
     <link href="{% static 'dashboard/css/dropzone.css' %}" type="text/css" rel="stylesheet"/>
 
     <meta charset="utf-8">
-    <title>Simple File Upload</title>
+    <title>Egyptian Car License Plate Information Detection</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
     <div class="container">
-        <a class="navbar-brand" href="{% url 'index' %}">Start Bootstrap</a>
+        <a class="navbar-brand" href="{% url 'index' %}">Egyptian License Plates Detection</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
                 aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -42,41 +42,62 @@
 <!-- Footer -->
 <footer class="py-5 bg-dark">
     <div class="container">
-        <p class="m-0 text-center text-white">Copyright &copy; Your Website 2018</p>
+        <p class="m-0 text-center text-white">Copyright &copy; Faculty of Engineering Alexandria University 2018</p>
     </div>
     <!-- /.container -->
 </footer>
 
 <script type="text/javascript" charset="utf-8">
+$(document).ready(function() {
+     $("#please_wait").hide();
+     $("#final_result").hide();
+});
 Dropzone.options.myAwesomeDropzone = {
+
+
     success: function(file, response){
-        console.log(response)
+        console.log(response);
         response = JSON.parse(response);
-        stage = response["final_stage"]
-        images_url = response["images_url"]
-        note = response["note"]
+        stage = response["final_stage"];
+        images_url = response["images_url"];
+        note = response["note"];
 
         if (!Array.isArray(images_url))
-            images_url = [images_url]
-            stage = [stage]
-            note = [note]
+            images_url = [images_url];
+            stage = [stage];
+            note = [note];
 
         for (i in images_url) {
-            part1 = "<div class=\"col-lg-3 col-md-4 col-sm-6 portfolio-item\"><div class=\"card h-100\"><a href=\""
-            part2 = " \"><img class=\"card-img-top\" width=\"500\" height=\"200\" src=\""
-            part3 = " \" alt=\"\"></a><div class=\"card-body\"><h4 class=\"card-title\"><a href=\"#\">"
-            part4 = "</a></h4><p class=\"card-text\">"
-            part5 = "</p></div></div></div>"
-            image = part1 + images_url[i] + part2 + images_url[i] + part3 + stage[i] + part4 + note[i] + part5
+            part1 = "<div class=\"col-lg-3 col-md-4 col-sm-6 portfolio-item\"><div class=\"card h-100\"><a href=\"";
+            part2 = " \"><img class=\"card-img-top\" width=\"500\" height=\"200\" src=\"";
+            part3 = " \" alt=\"\"></a><div class=\"card-body\"><h4 class=\"card-title\"><a href=\"#\">";
+            part4 = "</a></h4><p class=\"card-text\">";
+            part5 = "</p></div></div></div>";
+            image = part1 + images_url[i] + part2 + images_url[i] + part3 + stage[i] + part4 + note[i] + part5;
 
             $( "#image_container" ).append(image);
         }
-        $( "#please_wait" ).hide()
+        $( "#please_wait" ).hide();
         $( "#info-wait" ).hide();
+        if(!note.contains("error"))
+            $( "#final_result" ).show();
+    },
+
+    init: function(){
+        var myDropzone = this;
+
+        this.on("sending", function() {
+          $("#please_wait").show();
+          $("#final_result").hide();
+        });
     }
 };
 {% block script %}
 {% endblock %}
+
+
+
+
 
 
 

@@ -129,6 +129,7 @@ class ObjectDetection(LocalizationAbstract):
         im_height = image.shape[0]
         maximum_height = 0
         last_index = -1
+
         for i in xs:
 
             if scores[0][i] > 0.8:
@@ -136,7 +137,21 @@ class ObjectDetection(LocalizationAbstract):
                                               boxes[0][i][3] * im_width,
                                               boxes[0][i][0] * im_height,
                                               boxes[0][i][2] * im_height)
+                '''
+                if classes[0][i] == 1:
+                    cv2.rectangle(image,
+                                  (int(round(left)), int(round(top))),
+                                  (int(round(right)), int(round(bottom))),
+                                  (255, 0, 0),
+                                  4)
 
+                if classes[0][i] == 2:
+                    cv2.rectangle(image,
+                                  (int(round(left)), int(round(top))),
+                                  (int(round(right)), int(round(bottom))),
+                                  (0, 0, 255),
+                                  4)
+                '''
                 if (bottom - top) > maximum_height:
 
                     box_final = [int(round(left)), int(round(right)), int(round(top)), int(round(bottom))]
@@ -163,5 +178,6 @@ class ObjectDetection(LocalizationAbstract):
                         score_final = scores[0][i]
                         maximum_height = (bottom - top)
 
-        self.resize_box(image, box_final)
+        if not (box_final is None):
+            self.resize_box(image, box_final)
         return [box_final, image], class_final, score_final

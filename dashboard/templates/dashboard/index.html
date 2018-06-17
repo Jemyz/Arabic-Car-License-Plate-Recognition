@@ -10,10 +10,10 @@ active
 <div class="container">
 
     <!-- Portfolio Item Heading -->
-    <h1 class="my-4">Welcome to car detection
+    <h2 class="my-4">Welcome to Egyptian Car License Plate Information Detection
         <br>
-        <small>Please upload image or video</small>
-    </h1>
+        <small>Please upload an Image or Video</small>
+    </h2>
 
     <!-- Portfolio Item Row -->
     <div class="row">
@@ -57,28 +57,31 @@ active
                 </div>
                 {% csrf_token %}
             </form>
+            <h4 id="info-wait" class="my-4">Detected images will be shown in this section</h4>
+            <h3 id="please_wait" class="my-4">Please Wait</h3>
+            <h3 id="final_result" class="my-4">Final Result</h3>
         </div>
 
         <div class="col-md-4">
-            <h3 class="my-3">Project Description</h3>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam viverra euismod odio, gravida pellentesque
-                urna varius vitae. Sed dui lorem, adipiscing in adipiscing et, interdum nec metus. Mauris ultricies,
-                justo eu convallis placerat, felis enim.</p>
-            <h3 class="my-3">Project Details</h3>
-            <ul>
-                <li>Lorem Ipsum</li>
-                <li>Dolor Sit Amet</li>
-                <li>Consectetur</li>
-                <li>Adipiscing Elit</li>
+            <h4 class="my-3">Project Description</h4>
+            <p style="font-size:14px">This project is concerned with cars exceeding speed limit captured by the radar,
+                main idea is to automate this system by implementing an application which extract
+                license information from images taken by radar. Our point of concern is to apply the
+                process on Arabic license plates. Our application is able to recognize the Arabic characters
+                and numbers from images of license plates.</p>
+            <h4 class="my-3">Project Details</h4>
+            <ul style="font-size:14px">
+                <li>We prepared a dataset for various kinds of car plates found in Egypt</li>
+                <li>We tried to cover all possible real-life conditions regarding images for the plates</li>
+                <li>We made a survey to know any kind of work related to ours and there is no such a project found in Egypt</li>
+                <li>We prepared a neat package for the source code and there is a full documentation for it</li>
             </ul>
         </div>
+         <!-- Related Projects Row -->
+
 
     </div>
     <!-- /.row -->
-    <!-- Related Projects Row -->
-    <h3 id="please_wait" class="my-4">Please Wait</h3>
-    <h4 id="info-wait" class="my-4">Detected images will be shown in this section</h4>
-
     <div id="image_container" class="row">
 
         <!-- below element is added by jquery --!>
@@ -97,6 +100,8 @@ active
         </div>-->
 
     </div>
+
+
     <!-- /.row -->
 
 </div>

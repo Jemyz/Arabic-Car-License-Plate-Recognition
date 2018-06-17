@@ -14,15 +14,17 @@ import time
 
 localization_strategies = {"ObjectDetection": 1}
 segmentation_strategies = {"Inception": 1}
-classification_strategies = {"CNN": 1, "SVM": 1, "TemplateMatching": 1}
+classification_strategies = {"SVM": 1}
 # classification_strategies = {"CNN": 1, "VGG16":1, "SVM": 1, "TemplateMatching": 1}
-classification_unloaded = ["VGG16"]
+classification_unloaded = []
 segmentation_unloaded = []
 localization_unloaded = []
 
 segmenter = package.segmenter(segmentation_strategies)
 classifier = package.classifier(classification_strategies)
 localize = package.localize(localization_strategies)
+
+fs = FileSystemStorage()
 
 
 def check_ext(file):
@@ -35,32 +37,26 @@ def check_ext(file):
     return file_type
 
 
-def handle_image(image_name, classification_type, segmentation_type, localization_type, fs):
+def handle_image(image_name, classification_type, segmentation_type, localization_type):
     path = os.path.join(settings.MEDIA_ROOT, image_name)
     note = ""
-    localization_object = None
-    localization_class = None
-    segmentation_object = None
-    segmentation_class = None
-    classification_object = None
-    classification_class = None
 
-    # --------------------localization handling----------------------
     try:
 
-        if (localization_type in localization_strategies or localization_type in localization_unloaded) and not (
-                localization_type == "None"):
+        if (localization_type in [*localization_strategies, *localization_unloaded] and not (
+                localization_type == "None")):
+
             load_object = False
             if localization_type in localization_unloaded:
                 load_object = True
 
             localization_class = getattr(package.localizers, localization_type)
-            [[box, vehicle_image], class_detected, prob], localization_object = localize.localize(path,
-                                                                                                  load_model=load_object,
-                                                                                                  localization_strategy=localization_class,
-                                                                                                  get_object=True)
-
-            if vehicle_image is not None:
+            [[box, vehicle_image], class_detected, prob] = localize.localize(path,
+                                                                             load_model=load_object,
+                                                                             localization_strategy=localization_class)
+            if vehicle_image is None:
+                raise AssertionError
+            else:
                 vehicle_image = cv2.cvtColor(vehicle_image, cv2.COLOR_RGB2BGR)
 
             if box is None:
@@ -70,51 +66,44 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
 
             if segmentation_type == "None":
                 note = str(time.strftime("%d/%m/%Y")) + " localization for " + image_name
-                localized_name = "localization - " + fs.generate_filename(image_name)
+                localized_name = "localization ___ " + fs.generate_filename(image_name)
 
                 if not (localized_name == image_name):
                     fs.delete(image_name)
 
                 directory = os.path.join(settings.MEDIA_ROOT, localized_name)
                 localize.visualize(vehicle_image, directory, box, class_detected)
-
-                if localization_type not in localization_unloaded:
-                    localize.append_localization_strategy(localization_class, localization_object)
+                print(localization_type)
 
                 return ["localization", fs.url(localized_name), note]
 
-            if localization_type not in localization_unloaded:
-                localize.append_localization_strategy(localization_class, localization_object)
-
         elif not (localization_type == "None"):
-            raise ValueError
+            raise ValueError("type not defined")
+
         else:
             image = cv2.imread(path)
 
     except Exception as e:
-
-        if localization_object is not None and localization_class:
-            localize.append_localization_strategy(localization_class, localization_object)
-        fs.delete(image_name)
         print('%s (%s)' % (e, type(e)))
-        return ["error", "", "error happened while detecting the plate please try again"]
+        return ["error", fs.url(image_name), "the localization module failed to extract the plate from image"]
 
     # --------------------segmentation handling-------------------------
+    print("segmenting")
     try:
-        if segmentation_type in segmentation_strategies or segmentation_type in segmentation_unloaded:
+        if segmentation_type in [*segmentation_strategies, *segmentation_unloaded]:
+
             load_object = False
             if segmentation_type in segmentation_unloaded:
                 load_object = True
 
             segmentation_class = getattr(package.segmenters, segmentation_type)
-            [images, boxes, classes, scores], segmentation_object = segmenter.segment(image,
-                                                                                      load_model=load_object,
-                                                                                      segmentation_strategy=segmentation_class,
-                                                                                      get_object=True)
+            [images, boxes, classes, scores] = segmenter.segment(image,
+                                                                 load_model=load_object,
+                                                                 segmentation_strategy=segmentation_class)
 
             if classification_type == "None":
                 note = str(time.strftime("%d/%m/%Y")) + " segmentation for " + image_name
-                segmented_name = "segmentation - " + fs.generate_filename(image_name)
+                segmented_name = "segmentation ___ " + fs.generate_filename(image_name)
 
                 if not (segmented_name == image_name):
                     fs.delete(image_name)
@@ -122,31 +111,27 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
                 directory = os.path.join(settings.MEDIA_ROOT, segmented_name)
                 segmenter.visualize(image, directory, boxes, classes)
 
-                if segmentation_type not in segmentation_unloaded:
-                    segmenter.append_segmentation_strategy(segmentation_class, segmentation_object)
-
                 return ["segmentation", fs.url(segmented_name), note]
-            if segmentation_type not in segmentation_unloaded:
-                segmenter.append_segmentation_strategy(segmentation_class, segmentation_object)
+
         else:
             raise ValueError
 
     except Exception as e:
-
-        if segmentation_object is not None and segmentation_class:
-            segmenter.append_segmentation_strategy(segmentation_class, segmentation_object)
-        fs.delete(image_name)
         print('%s (%s)' % (e, type(e)))
-        return ["error", "", "error happened while segmenting the plate please try again"]
+        return ["error", fs.url(image_name), "the segmentation module failed to extract the plate from image"]
 
     # ---------------------classification handling---------------------------
-    print("classifying")
-    try:
-        if classification_type in classification_strategies or classification_type in classification_unloaded:
-            classification_object = None
-            classification_class = getattr(package.classifiers, classification_type)
-            load_object = False
 
+    print("classifying")
+    classification_class = None
+    classification_object = None
+    letters_note = ""
+    try:
+        if classification_type in [*classification_strategies, *classification_unloaded] :
+
+            classification_class = getattr(package.classifiers, classification_type)
+
+            load_object = False
             if classification_type in classification_unloaded:
                 load_object = True
 
@@ -159,14 +144,19 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
                                                                                      classification_object=classification_object)
                 print(predicted_label)
                 load_object = False
-                # cv2.imshow("image", images[image_index])
-                # cv2.waitKey()
+                #cv2.imshow("image", images[image_index])
+                #cv2.waitKey()
                 # cv2.imwrite("./" + image_index + ".jpg", images[image_index])
                 # import scipy.misc
                 # scipy.misc.imsave(str(image_index) +'.jpg', images[image_index])
-                note += str(predicted_label).strip()
+                if classes[image_index] == 1:
+                    letters_note += str(predicted_label)+ " "
+                else:
+                    note += str(predicted_label)
+
                 # print(int(classes[image_index]))
                 # print(note)
+            note += letters_note[::-1]
             print(note)
 
             if classification_type not in classification_unloaded:
@@ -178,39 +168,38 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
 
         if classification_object is not None and classification_class:
             classifier.append_classification_strategy(classification_class, classification_object)
-        fs.delete(image_name)
-        print('%s (%s)' % (e, type(e)))
-        return ["error", "", "error happened while classifying the plate please try again"]
 
-    image_new_name = "classification - " + note + "- " + fs.generate_filename(image_name)
+        print('%s (%s)' % (e, type(e)))
+
+        return ["error", fs.url(image_name), "classifier failed to classify the image"]
+
+    image_new_name = "classification ___ " + note + "- " + fs.generate_filename(image_name)
     new_path = os.path.join(settings.MEDIA_ROOT, image_new_name)
     os.rename(path, new_path)
 
     return ["classification", fs.url(image_new_name), note]
 
 
-def handle_video(filename, classification_type, segmentation_type, localization_type, fs):
+def handle_video(filename, classification_type, segmentation_type, localization_type):
     # frame video and get images
     # call handle_image on each image
 
     return filename
 
 
-def handle_file(file, classification_type, segmentation_type, localization_type, fs):
+def handle_file(file, classification_type, segmentation_type, localization_type):
     type_file = check_ext(file)
     filename = fs.save(file.name, file)
 
     if type_file == "image":
-        result = handle_image(filename, classification_type, segmentation_type, localization_type, fs)
+        result = handle_image(filename, classification_type, segmentation_type, localization_type)
     else:
-        result = handle_video(filename, classification_type, segmentation_type, localization_type, fs)
+        result = handle_video(filename, classification_type, segmentation_type, localization_type)
 
     return result
 
 
 def index(request):
-    fs = FileSystemStorage()
-
     try:
         if request.method == 'POST':
             images_url = []
@@ -224,8 +213,10 @@ def index(request):
             localization_type = request.POST['localization']
 
             for file in files:
-                final_stage, images_url, note = handle_file(file, classification_type, segmentation_type,
-                                                            localization_type, fs)
+                final_stage, images_url, note = handle_file(file,
+                                                            classification_type,
+                                                            segmentation_type,
+                                                            localization_type)
 
             data = {"final_stage": final_stage, "images_url": images_url, "note": note}
             return HttpResponse(json.dumps(data))
@@ -242,16 +233,14 @@ def index(request):
 
 
 def show(request):
-    fs = FileSystemStorage()
     array = []
     files = fs.listdir("./")
     for file in files[1]:
         try:
-            splits = file.split("-")
+            splits = file.split("___")
             array.append([fs.url(file), splits[1], splits[0]])
 
         except Exception as e:
-            array.append([fs.url(file)])
             print('%s (%s)' % (e, type(e)))
 
     return render(request, 'dashboard/show.html', {'image_list': array})

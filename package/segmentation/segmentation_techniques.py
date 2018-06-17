@@ -49,6 +49,7 @@ class Segmenter(object):
                     segmentation_object = model_map[segmentation_strategy](segmentation_strategy)
                 else:
                     segmentation_object = segmentation_strategy()
+
             else:
                 segmentation_object = self.acquire_segmentation_strategy(segmentation_strategy)
 
@@ -61,7 +62,6 @@ class Segmenter(object):
         return value_array, segmentation_object
 
     def visualize(self, image, directory, boxes, classes):
-
         im_width = image.shape[1]
         im_height = image.shape[0]
 
@@ -70,18 +70,19 @@ class Segmenter(object):
                                           boxes[i][3] * im_width,
                                           boxes[i][0] * im_height,
                                           boxes[i][2] * im_height)
-            if classes[i] == 1:
-                cv2.rectangle(image,
-                              (int(round(left)), int(round(top))),
-                              (int(round(right)), int(round(bottom))),
-                              (255, 0, 0),
-                              4)
-            if classes[i] == 2:
-                cv2.rectangle(image,
-                              (int(round(left)), int(round(top))),
-                              (int(round(right)), int(round(bottom))),
-                              (0, 255, 0),
-                              4)
+
+            if int(classes[i]) == 1:
+                image = cv2.rectangle(image,
+                                      (int(left), int(bottom)),
+                                      (int(right), int(top)),
+                                      (255, 0, 0),
+                                      4)
+            else:
+                image = cv2.rectangle(image,
+                                      (int(round(left)), int(round(bottom))),
+                                      (int(round(right)), int(round(top))),
+                                      (0, 255, 0),
+                                      4)
 
         cv2.imwrite(directory, image)
 
