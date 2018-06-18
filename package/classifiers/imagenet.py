@@ -29,17 +29,22 @@ from keras.applications import NASNetMobile  # 224
 
 class ImageNet(ClassificationAbstract):
 
-    def __init__(self,feature_class):
+    def __init__(self,feature_class,both_model_flag):
 
+        self.both_model_flag = both_model_flag
         self.projectpath = os.path.join(os.getcwd(), "package", "classifiers")
-        self.model_dir = os.path.join(os.getcwd(), "package", "classifiers", "models/ImageNet/")
+
+        if(self.both_model_flag):
+            self.model_dir = os.path.join(os.getcwd(), "package", "classifiers", "models/ImageNet/both/")
+        else:
+            self.model_dir = os.path.join(os.getcwd(), "package", "classifiers", "models/ImageNet/separate/")
 
         self.size_dict = {MobileNet: [128, 128], NASNetMobile: [224, 224],
-                          DenseNet121: [221, 221], DenseNet169: [221, 221],
-                          DenseNet201: [221, 221], ResNet50: [197, 197],
+                          DenseNet121: [224, 224], DenseNet169: [224, 224],
+                          DenseNet201: [224, 224], ResNet50: [197, 197],
                           NASNetLarge: [331, 331], Xception: [71, 71],
                           InceptionV3: [139, 139], InceptionResNetV2: [139, 139],
-                          VGG16: [48, 48], VGG19: [48, 48]}
+                          VGG16: [48, 48], VGG19: [224, 224]}
 
         self.HEIGHT = self.size_dict[feature_class][0]
         self.WIDTH = self.size_dict[feature_class][1]
@@ -50,9 +55,13 @@ class ImageNet(ClassificationAbstract):
 
         self.nTrain = 0
         self.nVal = 0
+        self.feature_class_name = ((feature_class).__name__)
 
-        self.letters_model_path = "stable/letters-weights-improvement-*.hdf5"
-        self.numbers_model_path = "stable/numbers-weights-improvement-*.hdf5"
+        if (self.both_model_flag):
+            self.both_model_path = "stable/"+self.feature_class_name+"/both-weights-improvement-*.hdf5"
+        else:
+            self.letters_model_path = "stable/"+self.feature_class_name+"/letters-weights-improvement-*.hdf5"
+            self.numbers_model_path = "stable/"+self.feature_class_name+"/numbers-weights-improvement-*.hdf5"
 
         self.graph = tf.Graph()
         with self.graph.as_default():
@@ -63,8 +72,11 @@ class ImageNet(ClassificationAbstract):
                                                    input_shape=(self.HEIGHT, self.WIDTH, 3))
 
                 self.feature_model_output_shape = self.feature_model.get_output_shape_at(-1)
-                self.letters_model = self.model_loader(self.letters_model_path)[0]
-                self.numbers_model = self.model_loader(self.numbers_model_path)[0]
+                if (self.both_model_flag):
+                    self.both_model = self.model_loader(self.both_model_path)[0]
+                else:
+                    self.letters_model = self.model_loader(self.letters_model_path)[0]
+                    self.numbers_model = self.model_loader(self.numbers_model_path)[0]
 
         # self.vgg_conv._make_predict_function()
 
@@ -72,9 +84,16 @@ class ImageNet(ClassificationAbstract):
         # self.letters_model.predict(np.zeros((1, 25088)))
         # self.numbers_model.predict(np.zeros((1, 25088)))
 
-        self.letters_classes = {0: 'ا', 1: 'ب', 2: 'ج', 3: 'د', 4: 'ر', 5: 'س', 6: 'ص', 7: 'ط', 8: 'ع', 9: 'ف', 10: 'ق',
-                                11: 'ل', 12: 'م', 13: 'ن', 14: 'ه', 15: 'و', 16: 'ى'}
-        self.numbers_classes = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9'}
+        if (self.both_model_flag):
+            self.both_classes = {'0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9,
+                                 'ا': 10, 'ب': 11, 'ج': 12, 'د': 13, 'ر': 14, 'س': 15, 'ص': 16, 'ط': 17, 'ع': 18,
+                                 'ف': 19, 'ق': 20, 'ل': 21, 'م': 22, 'ن': 23, 'ه': 24, 'و': 25, 'ى': 26}
+
+
+        else:
+            self.letters_classes = {0: 'ا', 1: 'ب', 2: 'ج', 3: 'د', 4: 'ر', 5: 'س', 6: 'ص', 7: 'ط', 8: 'ع', 9: 'ف', 10: 'ق',
+                                    11: 'ل', 12: 'م', 13: 'ن', 14: 'ه', 15: 'و', 16: 'ى'}
+            self.numbers_classes = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9'}
 
     def get_classes(self):
 
@@ -277,21 +296,29 @@ class ImageNet(ClassificationAbstract):
         features = np.reshape(features, (1, self.feature_model_output_shape[1] *
                                          self.feature_model_output_shape[2] * self.feature_model_output_shape[3]))
 
-        if image_type == 1:
+        if(self.both_model_flag):
             with self.graph.as_default():
                 with self.session.as_default():
-                    prediction = self.letters_model.predict_classes(features)[0]
-            prob = self.letters_model.predict(features)
-            pred_label = self.letters_classes[prediction]
+                    prediction = self.both_model.predict_classes(features)[0]
+            prob = self.both_model.predict(features)
+            pred_label = self.both_classes[prediction]
 
-        elif image_type == 2:
-            with self.graph.as_default():
-                with self.session.as_default():
-                    prediction = self.numbers_model.predict_classes(features)[0]
-            prob = self.numbers_model.predict(features)
-            pred_label = self.numbers_classes[prediction]
         else:
-            raise TypeError
+            if image_type == 1:
+                with self.graph.as_default():
+                    with self.session.as_default():
+                        prediction = self.letters_model.predict_classes(features)[0]
+                prob = self.letters_model.predict(features)
+                pred_label = self.letters_classes[prediction]
+
+            elif image_type == 2:
+                with self.graph.as_default():
+                    with self.session.as_default():
+                        prediction = self.numbers_model.predict_classes(features)[0]
+                prob = self.numbers_model.predict(features)
+                pred_label = self.numbers_classes[prediction]
+            else:
+                raise TypeError
         probability = prob[0][prediction]
         return pred_label, probability
 
