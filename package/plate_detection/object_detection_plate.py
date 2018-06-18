@@ -9,7 +9,7 @@ from package.plate_detection.localization_abstract import LocalizationAbstract
 
 class ObjectDetection(LocalizationAbstract):
 
-    def __init__(self):
+    def __init__(self,model):
         # Path to image
         # PATH_TO_IMAGE = os.path.join(CWD_PATH, IMAGE_NAME)
         print("loading localization model")
@@ -20,7 +20,7 @@ class ObjectDetection(LocalizationAbstract):
         # Path to frozen detection graph .pb file, which contains the model that is used
         # for object detection.
         path_to_model = os.path.join(self.CWD_PATH, "package", "plate_detection", "object_detection_plates", "models",
-                                     'frozen_inference_graph.pb')
+                                     model+'.pb')
 
         # Load the Tensorflow model into memory.
         detection_graph = tf.Graph()

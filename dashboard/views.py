@@ -12,12 +12,14 @@ import package
 import json
 import time
 
-localization_strategies = {"ObjectDetection": 1}
+
+localization_strategies = {"Inception": 1, "PlateDetection":1}
 segmentation_strategies = {"Inception": 1}
 classification_strategies = {"SVM": 1}
 # classification_strategies = {"CNN": 1, "VGG16":1, "SVM": 1, "TemplateMatching": 1}
-classification_unloaded = []
-segmentation_unloaded = []
+classification_unloaded = ['MobileNet:both',"MobileNet","NASNetMobile","DenseNet121","DenseNet169","DenseNet201",
+                           "ResNet50","NASNetLarge","Xception","InceptionV3","InceptionResNetV2","VGG16","VGG19"]
+segmentation_unloaded = ['ResNet101']
 localization_unloaded = []
 
 segmenter = package.segmenter(segmentation_strategies)
@@ -50,10 +52,15 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
             if localization_type in localization_unloaded:
                 load_object = True
 
-            localization_class = getattr(package.localizers, localization_type)
-            [[box, vehicle_image], class_detected, prob] = localize.localize(path,
+            try:
+                localization_class = getattr(package.localizers, localization_type)
+            except:
+                localization_class = localization_type
+
+            [[box, vehicle_image], class_detected, prob], _ = localize.localize(path,
                                                                              load_model=load_object,
                                                                              localization_strategy=localization_class)
+            print("hizzzzzzzzzzzzzzzzzzzzzz")
             if vehicle_image is None:
                 raise AssertionError
             else:
@@ -95,11 +102,14 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
             load_object = False
             if segmentation_type in segmentation_unloaded:
                 load_object = True
+            try:
+                segmentation_class = getattr(package.segmenters, segmentation_type)
+            except:
+                segmentation_class = segmentation_type
 
-            segmentation_class = getattr(package.segmenters, segmentation_type)
-            [images, boxes, classes, scores] = segmenter.segment(image,
-                                                                 load_model=load_object,
-                                                                 segmentation_strategy=segmentation_class)
+            [images, boxes, classes, scores], _ = segmenter.segment(image,
+                                                                    load_model=load_object,
+                                                                    segmentation_strategy=segmentation_class)
 
             if classification_type == "None":
                 note = str(time.strftime("%d/%m/%Y")) + " segmentation for " + image_name
@@ -127,13 +137,22 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
     classification_object = None
     letters_note = ""
     try:
-        if classification_type in [*classification_strategies, *classification_unloaded] :
+        if classification_type in [*classification_strategies, *classification_unloaded]:
 
-            classification_class = getattr(package.classifiers, classification_type)
+            temp_classification_type = classification_type
+
+            classifier.both = False
 
             load_object = False
             if classification_type in classification_unloaded:
                 load_object = True
+
+            type_splits = classification_type.split(':')
+            if len(type_splits) > 1:
+                classifier.both = True
+                classification_type = type_splits[0]
+
+            classification_class = getattr(package.classifiers, classification_type)
 
             for image_index in range(len(images)):
                 [predicted_label, prob], classification_object = classifier.classify(images[image_index],
@@ -144,13 +163,13 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
                                                                                      classification_object=classification_object)
                 print(predicted_label)
                 load_object = False
-                #cv2.imshow("image", images[image_index])
-                #cv2.waitKey()
+                cv2.imshow("image", images[image_index])
+                cv2.waitKey()
                 # cv2.imwrite("./" + image_index + ".jpg", images[image_index])
                 # import scipy.misc
                 # scipy.misc.imsave(str(image_index) +'.jpg', images[image_index])
                 if classes[image_index] == 1:
-                    letters_note += str(predicted_label)+ " "
+                    letters_note += str(predicted_label) + " "
                 else:
                     note += str(predicted_label)
 
@@ -158,7 +177,7 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
                 # print(note)
             note += letters_note[::-1]
             print(note)
-
+            classification_type = temp_classification_type
             if classification_type not in classification_unloaded:
                 classifier.append_classification_strategy(classification_class, classification_object)
         else:

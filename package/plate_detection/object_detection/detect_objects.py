@@ -93,6 +93,7 @@ class ObjectDetection(object):
         # filtering by classes
         if self.classes is not None:
             class_filtered = np.isin(output_dict['detection_classes'], self.classes)
+            print(class_filtered)
             output_dict['detection_scores'] = output_dict['detection_scores'][class_filtered]
             output_dict['detection_classes'] = output_dict['detection_classes'][class_filtered]
             output_dict['detection_boxes'] = output_dict['detection_boxes'][class_filtered]

@@ -3,7 +3,13 @@ from package.segmentation.Inception import Inception
 from threading import Semaphore
 import cv2
 
-model_map = {}
+model_map = {
+    "Inception": Inception,
+    "ResNet101":Inception,
+    "Inception-ResNet": Inception,
+    "FasterRCNN-ResNet": Inception,
+
+}
 
 
 class Segmenter(object):
@@ -42,7 +48,7 @@ class Segmenter(object):
     def segment(self, image, segmentation_strategy=Inception, get_object=False, segmentation_object=None,
                 load_model=False):
 
-        if not segmentation_object:
+        if segmentation_object is None:
             if load_model:
 
                 if segmentation_strategy in model_map:
@@ -54,10 +60,11 @@ class Segmenter(object):
                 segmentation_object = self.acquire_segmentation_strategy(segmentation_strategy)
 
         value_array = segmentation_object.find(image)
+        print(value_array)
 
         if not get_object and not load_model:
             self.append_segmentation_strategy(segmentation_strategy, segmentation_object)
-            return value_array
+            return value_array, ""
 
         return value_array, segmentation_object
 

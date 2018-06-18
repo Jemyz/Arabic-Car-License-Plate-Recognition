@@ -10,7 +10,7 @@ from package.segmentation.segmentaion_abstract import SegmentationAbstract
 
 class Inception(SegmentationAbstract):
 
-    def __init__(self):
+    def __init__(self, model="Inception"):
         # Path to image
         # PATH_TO_IMAGE = os.path.join(CWD_PATH, IMAGE_NAME)
         print("loading segmentation model")
@@ -23,7 +23,7 @@ class Inception(SegmentationAbstract):
         # Path to frozen detection graph .pb file, which contains the model that is used
         # for object detection.
         path_to_model = os.path.join(self.CWD_PATH, "package", "segmentation", "neural_network", model_name,
-                                     'frozen_inference_graph.pb')
+                                     model + '.pb')
 
         # Load the Tensorflow model into memory.
         detection_graph = tf.Graph()

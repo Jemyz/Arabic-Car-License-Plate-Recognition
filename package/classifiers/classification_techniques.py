@@ -30,7 +30,7 @@ class Classifier(object):
     def __init__(self, strategies=None):
         self.__action = {}
         self.__semaphores = {}
-
+        self.both = False
         self.count = 0
         self.set_strategy(strategies)
 
@@ -50,7 +50,7 @@ class Classifier(object):
 
             if strategy in model_map or issubclass(strategy, ClassificationAbstract):
                 if strategy in model_map:
-                    classification_object = model_map[strategy](strategy)
+                    classification_object = model_map[strategy](strategy, self.both)
                 else:
                     classification_object = strategy()
 
@@ -62,11 +62,11 @@ class Classifier(object):
     def classify(self, image, type_image, classification_strategy=CNN, get_object=False, classification_object=None,
                  load_model=False):
 
-        if not classification_object:
+        if classification_object is None:
             if load_model:
 
                 if classification_strategy in model_map:
-                    classification_object = model_map[classification_strategy](classification_strategy)
+                    classification_object = model_map[classification_strategy](classification_strategy, self.both)
                 else:
                     classification_object = classification_strategy()
             else:

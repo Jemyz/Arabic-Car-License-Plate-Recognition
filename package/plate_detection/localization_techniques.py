@@ -4,7 +4,11 @@ from threading import Semaphore
 from package.plate_detection.detect_plate import PlateDetection
 from package.plate_detection.object_detection_plate import ObjectDetection
 
-model_map = {}
+model_map = {
+    "Inception": ObjectDetection,
+    "ResNet101":ObjectDetection,
+    "Inception-ResNet": ObjectDetection
+}
 
 
 class Localize(object):
@@ -57,7 +61,7 @@ class Localize(object):
 
         if not get_object and not load_model:
             self.append_localization_strategy(localization_strategy, localization_object)
-            return value_array
+            return value_array, ""
 
         return value_array, localization_object
 

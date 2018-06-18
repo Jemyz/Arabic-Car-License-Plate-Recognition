@@ -12,7 +12,6 @@ import pickle
 from package.classifiers.classification_abstract import ClassificationAbstract
 import cv2
 
-
 from keras.applications import VGG16
 from keras.applications import VGG19
 from keras.applications import Xception
@@ -29,12 +28,12 @@ from keras.applications import NASNetMobile  # 224
 
 class ImageNet(ClassificationAbstract):
 
-    def __init__(self,feature_class,both_model_flag):
+    def __init__(self, feature_class, both_model_flag):
 
         self.both_model_flag = both_model_flag
         self.projectpath = os.path.join(os.getcwd(), "package", "classifiers")
 
-        if(self.both_model_flag):
+        if (self.both_model_flag):
             self.model_dir = os.path.join(os.getcwd(), "package", "classifiers", "models/ImageNet/both/")
         else:
             self.model_dir = os.path.join(os.getcwd(), "package", "classifiers", "models/ImageNet/separate/")
@@ -58,10 +57,10 @@ class ImageNet(ClassificationAbstract):
         self.feature_class_name = ((feature_class).__name__)
 
         if (self.both_model_flag):
-            self.both_model_path = "stable/"+self.feature_class_name+"/both-weights-improvement-*.hdf5"
+            self.both_model_path = "stable/" + self.feature_class_name + "/both-weights-improvement-*.hdf5"
         else:
-            self.letters_model_path = "stable/"+self.feature_class_name+"/letters-weights-improvement-*.hdf5"
-            self.numbers_model_path = "stable/"+self.feature_class_name+"/numbers-weights-improvement-*.hdf5"
+            self.letters_model_path = "stable/" + self.feature_class_name + "/letters-weights-improvement-*.hdf5"
+            self.numbers_model_path = "stable/" + self.feature_class_name + "/numbers-weights-improvement-*.hdf5"
 
         self.graph = tf.Graph()
         with self.graph.as_default():
@@ -85,13 +84,15 @@ class ImageNet(ClassificationAbstract):
         # self.numbers_model.predict(np.zeros((1, 25088)))
 
         if (self.both_model_flag):
-            self.both_classes = {'0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9,
-                                 'ا': 10, 'ب': 11, 'ج': 12, 'د': 13, 'ر': 14, 'س': 15, 'ص': 16, 'ط': 17, 'ع': 18,
-                                 'ف': 19, 'ق': 20, 'ل': 21, 'م': 22, 'ن': 23, 'ه': 24, 'و': 25, 'ى': 26}
+            self.both_classes = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9',
+                                 10: 'ا', 11: 'ب', 12: 'ج', 13: 'د', 14: 'ر', 15: 'س', 16: 'ص', 17: 'ط', 18: 'ع',
+                                 19: 'ف', 20: 'ق',
+                                 21: 'ل', 22: 'م', 23: 'ن', 24: 'ه', 25: 'و', 26: 'ى'}
 
 
         else:
-            self.letters_classes = {0: 'ا', 1: 'ب', 2: 'ج', 3: 'د', 4: 'ر', 5: 'س', 6: 'ص', 7: 'ط', 8: 'ع', 9: 'ف', 10: 'ق',
+            self.letters_classes = {0: 'ا', 1: 'ب', 2: 'ج', 3: 'د', 4: 'ر', 5: 'س', 6: 'ص', 7: 'ط', 8: 'ع', 9: 'ف',
+                                    10: 'ق',
                                     11: 'ل', 12: 'م', 13: 'ن', 14: 'ه', 15: 'و', 16: 'ى'}
             self.numbers_classes = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9'}
 
@@ -295,8 +296,7 @@ class ImageNet(ClassificationAbstract):
 
         features = np.reshape(features, (1, self.feature_model_output_shape[1] *
                                          self.feature_model_output_shape[2] * self.feature_model_output_shape[3]))
-
-        if(self.both_model_flag):
+        if (self.both_model_flag):
             with self.graph.as_default():
                 with self.session.as_default():
                     prediction = self.both_model.predict_classes(features)[0]
@@ -320,5 +320,5 @@ class ImageNet(ClassificationAbstract):
             else:
                 raise TypeError
         probability = prob[0][prediction]
-        return pred_label, probability
 
+        return pred_label, probability
