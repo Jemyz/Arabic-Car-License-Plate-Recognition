@@ -11,6 +11,22 @@ def binary_otsu(img_gray):
     nonzero = np.count_nonzero(img_thresh)
     if nonzero - (9/pixels_total) * 100 > pixels_total - nonzero:
         img_thresh = cv2.bitwise_not(img_thresh)
+
+    '''
+    gaussian = cv2.getGaussianKernel(3, 3)
+    laplacian = np.array((
+        [0, 1, 0],
+        [1, -4, 1],
+        [0, 1, 0]), dtype="int")
+    sharpen = np.array(([-0.1, 0, -0.1],
+                        [0.1, 2, 0.1],
+                        [-0.1, -1, -0.1]), dtype="int")
+    img_thresh= cv2.filter2D(img_thresh,-1,kernel=sharpen)
+    #img_thresh = cv2.morphologyEx(img_thresh, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5)))
+    #img_thresh = cv2.morphologyEx(img_thresh, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (1, 1)))
+    img_thresh = cv2.GaussianBlur(img_thresh, (3, 3), 0)
+    '''
+
     return img_thresh
 
 

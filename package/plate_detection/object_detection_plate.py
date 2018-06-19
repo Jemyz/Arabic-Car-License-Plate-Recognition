@@ -9,7 +9,7 @@ from package.plate_detection.localization_abstract import LocalizationAbstract
 
 class ObjectDetection(LocalizationAbstract):
 
-    def __init__(self,model):
+    def __init__(self, model="Inception"):
         # Path to image
         # PATH_TO_IMAGE = os.path.join(CWD_PATH, IMAGE_NAME)
         print("loading localization model")

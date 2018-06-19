@@ -1,14 +1,15 @@
 from package.segmentation.segmentaion_abstract import SegmentationAbstract
 from package.segmentation.Inception import Inception
 from threading import Semaphore
+
 import cv2
 
 model_map = {
     "Inception": Inception,
-    "ResNet101":Inception,
+    "ResNet101": Inception,
     "Inception-ResNet": Inception,
     "FasterRCNN-ResNet": Inception,
-
+    "NewFCNResNet": Inception
 }
 
 
@@ -47,26 +48,32 @@ class Segmenter(object):
 
     def segment(self, image, segmentation_strategy=Inception, get_object=False, segmentation_object=None,
                 load_model=False):
+        print(segmentation_strategy)
+        try:
+            if segmentation_object is None:
+                if load_model:
 
-        if segmentation_object is None:
-            if load_model:
+                    if segmentation_strategy in model_map:
+                        segmentation_object = model_map[segmentation_strategy](segmentation_strategy)
+                    else:
+                        segmentation_object = segmentation_strategy()
 
-                if segmentation_strategy in model_map:
-                    segmentation_object = model_map[segmentation_strategy](segmentation_strategy)
                 else:
-                    segmentation_object = segmentation_strategy()
+                    segmentation_object = self.acquire_segmentation_strategy(segmentation_strategy)
 
-            else:
-                segmentation_object = self.acquire_segmentation_strategy(segmentation_strategy)
+            value_array = segmentation_object.find(image)
 
-        value_array = segmentation_object.find(image)
-        print(value_array)
+            if not get_object and not load_model:
+                self.append_segmentation_strategy(segmentation_strategy, segmentation_object)
+                return value_array, ""
 
-        if not get_object and not load_model:
-            self.append_segmentation_strategy(segmentation_strategy, segmentation_object)
-            return value_array, ""
+            return value_array, segmentation_object
 
-        return value_array, segmentation_object
+        except Exception as e:
+
+            print('%s (%s)' % (e, type(e)))
+            if not get_object and not load_model:
+                self.append_segmentation_strategy(segmentation_strategy, segmentation_object)
 
     def visualize(self, image, directory, boxes, classes):
         im_width = image.shape[1]

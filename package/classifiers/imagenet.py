@@ -12,6 +12,8 @@ import pickle
 from package.classifiers.classification_abstract import ClassificationAbstract
 import cv2
 
+from wand.image import Image
+from wand.display import display
 from keras.applications import VGG16
 from keras.applications import VGG19
 from keras.applications import Xception
@@ -284,7 +286,13 @@ class ImageNet(ClassificationAbstract):
     def predict(self, image, image_type):
         keras.backend.set_session(self.session)
 
-        image = cv2.resize(image, (self.WIDTH, self.HEIGHT))
+        #image = cv2.resize(image, (self.WIDTH, self.HEIGHT))
+        ret, mat = cv2.imencode(".jpg", image)
+        image = Image(blob=mat)
+        image.resize(self.WIDTH, self.HEIGHT)
+        image.format = 'gray'
+        image.alpha_channel = False
+        image = np.asarray(bytearray(image.make_blob()), dtype='uint8').reshape(image.size)
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB) / 255
 
         features = np.zeros(shape=(1, self.feature_model_output_shape[1],

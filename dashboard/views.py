@@ -11,16 +11,16 @@ import cv2
 import package
 import json
 import time
+from dashboard.toframe import video_framing
 
-
-localization_strategies = {"Inception": 1, "PlateDetection":1}
+localization_strategies = {"Inception": 1}
 segmentation_strategies = {"Inception": 1}
 classification_strategies = {"SVM": 1}
 # classification_strategies = {"CNN": 1, "VGG16":1, "SVM": 1, "TemplateMatching": 1}
-classification_unloaded = ['MobileNet:both',"MobileNet","NASNetMobile","DenseNet121","DenseNet169","DenseNet201",
-                           "ResNet50","NASNetLarge","Xception","InceptionV3","InceptionResNetV2","VGG16","VGG19"]
-segmentation_unloaded = ['ResNet101']
-localization_unloaded = []
+classification_unloaded = ['MobileNet:both', "MobileNet", "NASNetMobile", "DenseNet121", "DenseNet169", "DenseNet201",
+                           "ResNet50", "NASNetLarge", "Xception", "InceptionV3", "InceptionResNetV2", "VGG16", "VGG19"]
+segmentation_unloaded = ['ResNet101', "Inception-ResNet", "FasterRCNN-ResNet"]
+localization_unloaded = ['ResNet101', "Inception-ResNet", "PlateDetection"]
 
 segmenter = package.segmenter(segmentation_strategies)
 classifier = package.classifier(classification_strategies)
@@ -42,7 +42,7 @@ def check_ext(file):
 def handle_image(image_name, classification_type, segmentation_type, localization_type):
     path = os.path.join(settings.MEDIA_ROOT, image_name)
     note = ""
-
+    class_detected = 1
     try:
 
         if (localization_type in [*localization_strategies, *localization_unloaded] and not (
@@ -58,8 +58,8 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
                 localization_class = localization_type
 
             [[box, vehicle_image], class_detected, prob], _ = localize.localize(path,
-                                                                             load_model=load_object,
-                                                                             localization_strategy=localization_class)
+                                                                                load_model=load_object,
+                                                                                localization_strategy=localization_class)
             print("hizzzzzzzzzzzzzzzzzzzzzz")
             if vehicle_image is None:
                 raise AssertionError
@@ -102,24 +102,34 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
             load_object = False
             if segmentation_type in segmentation_unloaded:
                 load_object = True
+
             try:
-                segmentation_class = getattr(package.segmenters, segmentation_type)
+                if int(class_detected) == 1:
+                    segmentation_class = getattr(package.segmenters, segmentation_type)
+                else:
+                    load_object = True
+                    segmentation_class = getattr(package.segmenters, "NewFCNResNet")
             except:
-                segmentation_class = segmentation_type
+                if int(class_detected) == 1:
+                    segmentation_class = segmentation_type
+                else:
+                    load_object = True
+                    segmentation_class = "NewFCNResNet"
 
-            [images, boxes, classes, scores], _ = segmenter.segment(image,
-                                                                    load_model=load_object,
-                                                                    segmentation_strategy=segmentation_class)
-
+            [images, boxes, classes, scores, type_plate], _ = segmenter.segment(image,
+                                                                                load_model=load_object,
+                                                                                segmentation_strategy=segmentation_class)
             if classification_type == "None":
-                note = str(time.strftime("%d/%m/%Y")) + " segmentation for " + image_name
+                note = type_plate
                 segmented_name = "segmentation ___ " + fs.generate_filename(image_name)
 
                 if not (segmented_name == image_name):
                     fs.delete(image_name)
 
                 directory = os.path.join(settings.MEDIA_ROOT, segmented_name)
+                print("jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj")
                 segmenter.visualize(image, directory, boxes, classes)
+                print("jjjjjjjjjj")
 
                 return ["segmentation", fs.url(segmented_name), note]
 
@@ -136,6 +146,8 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
     classification_class = None
     classification_object = None
     letters_note = ""
+    note = " "
+
     try:
         if classification_type in [*classification_strategies, *classification_unloaded]:
 
@@ -175,18 +187,29 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
 
                 # print(int(classes[image_index]))
                 # print(note)
-            note += letters_note[::-1]
+
+            cv2.destroyAllWindows()
+            letters_note = letters_note[::-1]
+            note += type_plate + " " + letters_note
             print(note)
             classification_type = temp_classification_type
             if classification_type not in classification_unloaded:
                 classifier.append_classification_strategy(classification_class, classification_object)
+            else:
+                if not (classification_object is None):
+                    print("ss")
+                    del classification_object
         else:
             raise ValueError
 
     except Exception as e:
 
-        if classification_object is not None and classification_class:
+        if classification_object is not None and classification_class and classification_type not in classification_unloaded:
+            print("in")
             classifier.append_classification_strategy(classification_class, classification_object)
+        else:
+            if not (classification_object is None):
+                del classification_object
 
         print('%s (%s)' % (e, type(e)))
 
@@ -200,10 +223,18 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
 
 
 def handle_video(filename, classification_type, segmentation_type, localization_type):
-    # frame video and get images
+    path = os.path.join(settings.MEDIA_ROOT, filename)
+    images = video_framing(path)
+    i = 0
+    video_result = []
+    for image in images:
+        filename = fs.generate_filename(str(i) + ".jpg")
+        cv2.imwrite(os.path.join(settings.MEDIA_ROOT, filename), image)
+        value_array = handle_image(filename, classification_type, segmentation_type, localization_type)
+        video_result.append(value_array)
     # call handle_image on each image
 
-    return filename
+    return video_result
 
 
 def handle_file(file, classification_type, segmentation_type, localization_type):
@@ -212,6 +243,8 @@ def handle_file(file, classification_type, segmentation_type, localization_type)
 
     if type_file == "image":
         result = handle_image(filename, classification_type, segmentation_type, localization_type)
+        result = [result]
+        print("kkkk")
     else:
         result = handle_video(filename, classification_type, segmentation_type, localization_type)
 
@@ -224,7 +257,7 @@ def index(request):
             images_url = []
             final_stage = "classification"
             note = ""
-
+            data = []
             files = request.FILES.getlist('file')
 
             classification_type = request.POST['classification']
@@ -232,12 +265,15 @@ def index(request):
             localization_type = request.POST['localization']
 
             for file in files:
-                final_stage, images_url, note = handle_file(file,
-                                                            classification_type,
-                                                            segmentation_type,
-                                                            localization_type)
+                array_frames = handle_file(file,
+                                           classification_type,
+                                           segmentation_type,
+                                           localization_type)
+                print(array_frames)
+                print("llllllllllllllllllllll")
+                for [final_stage, images_url, note] in array_frames:
+                    data.append({"final_stage": final_stage, "images_url": images_url, "note": note})
 
-            data = {"final_stage": final_stage, "images_url": images_url, "note": note}
             return HttpResponse(json.dumps(data))
 
     except Exception as e:

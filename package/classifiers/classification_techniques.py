@@ -61,24 +61,31 @@ class Classifier(object):
 
     def classify(self, image, type_image, classification_strategy=CNN, get_object=False, classification_object=None,
                  load_model=False):
+        try:
 
-        if classification_object is None:
-            if load_model:
+            if classification_object is None:
+                if load_model:
 
-                if classification_strategy in model_map:
-                    classification_object = model_map[classification_strategy](classification_strategy, self.both)
+                    if classification_strategy in model_map:
+                        classification_object = model_map[classification_strategy](classification_strategy, self.both)
+                    else:
+                        classification_object = classification_strategy()
                 else:
-                    classification_object = classification_strategy()
-            else:
-                classification_object = self.acquire_classification_strategy(classification_strategy)
+                    classification_object = self.acquire_classification_strategy(classification_strategy)
 
-        value_array = classification_object.predict(image, type_image)
+            value_array = classification_object.predict(image, type_image)
 
-        if not get_object and not load_model:
-            self.append_classification_strategy(classification_strategy, classification_object)
-            return value_array
+            if not get_object and not load_model:
+                self.append_classification_strategy(classification_strategy, classification_object)
+                return value_array
 
-        return value_array, classification_object
+            return value_array, classification_object
+
+        except Exception as e:
+
+            print('%s (%s)' % (e, type(e)))
+            if not get_object and not load_model:
+                self.append_classification_strategy(classification_strategy, classification_object)
 
     def acquire_classification_strategy(self, classification_strategy):
         print("classification lock:value")

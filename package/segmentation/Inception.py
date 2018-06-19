@@ -6,17 +6,20 @@ import tensorflow as tf
 
 from package.segmentation.neural_network import binary
 from package.segmentation.segmentaion_abstract import SegmentationAbstract
+from package.segmentation.Lisence_Plate_Type import get_lisence_type
 
 
 class Inception(SegmentationAbstract):
 
     def __init__(self, model="Inception"):
+
         # Path to image
         # PATH_TO_IMAGE = os.path.join(CWD_PATH, IMAGE_NAME)
         print("loading segmentation model")
+
         # Name of the directory containing the object detection module we're using
         model_name = 'inference_graph'
-
+        self.model = model
         # Grab path to current working directory
         self.CWD_PATH = os.getcwd()
 
@@ -72,5 +75,9 @@ class Inception(SegmentationAbstract):
                 classes_final.append(classes[0][i])
                 scores_final.append(scores[0][i])
 
+        type_plate = "segmented image"
+        if not (self.model  == "NewFCNResNet"):
+            type_plate = get_lisence_type(image)
+
         images = binary.binarize(image, boxes_final, classes_final, scores_final)
-        return images, boxes_final, classes_final, scores_final
+        return [images, boxes_final, classes_final, scores_final, type_plate]

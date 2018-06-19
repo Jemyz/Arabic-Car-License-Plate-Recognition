@@ -48,58 +48,52 @@
 </footer>
 
 <script type="text/javascript" charset="utf-8">
-$(document).ready(function() {
-     $("#please_wait").hide();
-     $("#final_result").hide();
-});
-Dropzone.options.myAwesomeDropzone = {
+    $(document).ready(function () {
+        $("#please_wait").hide();
+        $("#final_result").hide();
+    });
+    Dropzone.options.myAwesomeDropzone = {
 
 
-    success: function(file, response){
-        console.log(response);
-        response = JSON.parse(response);
-        stage = response["final_stage"];
-        images_url = response["images_url"];
-        note = response["note"];
+        success: function (file, response) {
+            console.log(response);
+            responses = JSON.parse(response);
+            for (response in responses) {
+                stage = responses[response]["final_stage"];
+                images_url = responses[response]["images_url"];
+                note = responses[response]["note"];
+                console.log(note);
+                console.log(images_url);
 
-        if (!Array.isArray(images_url))
-            images_url = [images_url];
-            stage = [stage];
-            note = [note];
+                    part1 = "<div class=\"col-lg-3 col-md-4 col-sm-6 portfolio-item\"><div class=\"card h-100\"><a href=\"";
+                    part2 = " \"><img class=\"card-img-top\" width=\"500\" height=\"200\" src=\"";
+                    part3 = " \" alt=\"\"></a><div class=\"card-body\"><h4 class=\"card-title\"><a href=\"#\">";
+                    part4 = "</a></h4><p class=\"card-text\">";
+                    part5 = "</p></div></div></div>";
+                    image = part1 + images_url + part2 + images_url + part3 + stage + part4 + note + part5;
 
-        for (i in images_url) {
-            part1 = "<div class=\"col-lg-3 col-md-4 col-sm-6 portfolio-item\"><div class=\"card h-100\"><a href=\"";
-            part2 = " \"><img class=\"card-img-top\" width=\"500\" height=\"200\" src=\"";
-            part3 = " \" alt=\"\"></a><div class=\"card-body\"><h4 class=\"card-title\"><a href=\"#\">";
-            part4 = "</a></h4><p class=\"card-text\">";
-            part5 = "</p></div></div></div>";
-            image = part1 + images_url[i] + part2 + images_url[i] + part3 + stage[i] + part4 + note[i] + part5;
+                    $("#image_container").append(image);
+                    console.log(note);
+                    if (note.indexOf("error") === -1) {
+                        $("#final_result").show();
+                    }
 
-            $( "#image_container" ).append(image);
+
+            }
+            $("#please_wait").hide();
+            $("#info-wait").hide();
+
+        },
+
+        init: function () {
+            var myDropzone = this;
+
+            this.on("sending", function () {
+                $("#please_wait").show();
+                $("#final_result").hide();
+            });
         }
-        $( "#please_wait" ).hide();
-        $( "#info-wait" ).hide();
-        if(!note.contains("error"))
-            $( "#final_result" ).show();
-    },
-
-    init: function(){
-        var myDropzone = this;
-
-        this.on("sending", function() {
-          $("#please_wait").show();
-          $("#final_result").hide();
-        });
-    }
-};
-{% block script %}
-{% endblock %}
-
-
-
-
-
-
+    };
 
 
 </script>

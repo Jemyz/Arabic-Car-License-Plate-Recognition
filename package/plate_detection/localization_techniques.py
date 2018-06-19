@@ -3,10 +3,11 @@ from package.plate_detection.localization_abstract import LocalizationAbstract
 from threading import Semaphore
 from package.plate_detection.detect_plate import PlateDetection
 from package.plate_detection.object_detection_plate import ObjectDetection
+from package.plate_detection.classify import classify
 
 model_map = {
     "Inception": ObjectDetection,
-    "ResNet101":ObjectDetection,
+    "ResNet101": ObjectDetection,
     "Inception-ResNet": ObjectDetection
 }
 
@@ -46,24 +47,31 @@ class Localize(object):
 
     def localize(self, image, localization_strategy=ObjectDetection, get_object=False, localization_object=None,
                  load_model=False):
+        try:
 
-        if not localization_object:
-            if load_model:
+            if not localization_object:
+                if load_model:
 
-                if localization_strategy in model_map:
-                    localization_object = model_map[localization_strategy](localization_strategy)
+                    if localization_strategy in model_map:
+                        localization_object = model_map[localization_strategy](localization_strategy)
+                    else:
+                        localization_object = localization_strategy()
                 else:
-                    localization_object = localization_strategy()
-            else:
-                localization_object = self.acquire_localization_strategy(localization_strategy)
+                    localization_object = self.acquire_localization_strategy(localization_strategy)
 
-        value_array = localization_object.find(image)
+            value_array = localization_object.find(image)
 
-        if not get_object and not load_model:
-            self.append_localization_strategy(localization_strategy, localization_object)
-            return value_array, ""
+            if not get_object and not load_model:
+                self.append_localization_strategy(localization_strategy, localization_object)
+                return value_array, ""
 
-        return value_array, localization_object
+            return value_array, localization_object
+
+        except Exception as e:
+
+            print('%s (%s)' % (e, type(e)))
+            if not get_object and not load_model:
+                self.append_localization_strategy(localization_strategy, localization_object)
 
     def visualize(self, image, directory, box, class_detected):
         print(box)

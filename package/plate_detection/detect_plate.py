@@ -6,7 +6,7 @@ from package.plate_detection.misc import bound_to_box
 from package.plate_detection.plate_non_plate_classifier import PlateClassifier
 from package.plate_detection.vehicle_detection import VehicleDetection
 from package.plate_detection.localization_abstract import LocalizationAbstract
-
+from package.plate_detection.classify import classify
 
 class PlateDetection(LocalizationAbstract):
     def __init__(self, window_max_size=(30, 30), window_width_step=2, window_height_step=2):
@@ -25,7 +25,8 @@ class PlateDetection(LocalizationAbstract):
                             int(box[1] * image.shape[1]):int(box[3] * image.shape[1])
                         ] if box is not None else image
         bounds, img = self.pl.get_bounds(img=vehicle_image, area_filter=True)
-        return self.pc.get_largest_plate(np.asarray([bound_to_box(bound) for bound in bounds]), vehicle_image), 1, 1
+        labels, scores = classify(img)
+        return self.pc.get_largest_plate(np.asarray([bound_to_box(bound) for bound in bounds]), vehicle_image), labels, scores
 
 
 def run(args):
