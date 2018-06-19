@@ -38,12 +38,12 @@ class ImageNet(ClassificationAbstract):
         else:
             self.model_dir = os.path.join(os.getcwd(), "package", "classifiers", "models/ImageNet/separate/")
 
-        self.size_dict = {MobileNet: [128, 128], NASNetMobile: [224, 224],
+        self.size_dict = {MobileNet: [224, 224], NASNetMobile: [224, 224],
                           DenseNet121: [224, 224], DenseNet169: [224, 224],
-                          DenseNet201: [224, 224], ResNet50: [197, 197],
-                          NASNetLarge: [331, 331], Xception: [71, 71],
-                          InceptionV3: [139, 139], InceptionResNetV2: [139, 139],
-                          VGG16: [48, 48], VGG19: [224, 224]}
+                          DenseNet201: [224, 224], ResNet50: [224, 224],
+                          NASNetLarge: [331, 331], Xception: [128,128],
+                          InceptionV3: [224, 224], InceptionResNetV2: [224, 224],
+                          VGG16: [224, 224], VGG19: [224, 224]}
 
         self.HEIGHT = self.size_dict[feature_class][0]
         self.WIDTH = self.size_dict[feature_class][1]
@@ -283,8 +283,22 @@ class ImageNet(ClassificationAbstract):
 
     def predict(self, image, image_type):
         keras.backend.set_session(self.session)
+        import scipy.misc as sm
 
-        image = cv2.resize(image, (self.WIDTH, self.HEIGHT))
+        if (self.both_model_flag):
+            # image = cv2.resize(image, (self.WIDTH, self.HEIGHT), interpolation = cv2.INTER_NEAREST)
+            # image = cv2.resize(image, (self.WIDTH, self.HEIGHT),  interpolation = cv2.INTER_LINEAR)
+            # image = sm.imresize(image,size=(self.WIDTH, self.HEIGHT),interp="bilinear")
+            image = cv2.resize(image, (self.WIDTH, self.HEIGHT))
+
+
+        else:
+            # image = sm.imresize(image,size=(self.WIDTH, self.HEIGHT), interp="nearest")
+            # image = cv2.resize(image, (self.WIDTH, self.HEIGHT),  interpolation = cv2.INTER_LINEAR)
+            # image = cv2.resize(image, (self.WIDTH, self.HEIGHT), interpolation = cv2.INTER_NEAREST)
+            image = cv2.resize(image, (self.WIDTH, self.HEIGHT))
+
+        # image = cv2.resize(image, (self.WIDTH, self.HEIGHT))
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB) / 255
 
         features = np.zeros(shape=(1, self.feature_model_output_shape[1],
@@ -296,6 +310,7 @@ class ImageNet(ClassificationAbstract):
 
         features = np.reshape(features, (1, self.feature_model_output_shape[1] *
                                          self.feature_model_output_shape[2] * self.feature_model_output_shape[3]))
+        print(features[0][20])
         if (self.both_model_flag):
             with self.graph.as_default():
                 with self.session.as_default():

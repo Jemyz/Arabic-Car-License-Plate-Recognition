@@ -17,10 +17,10 @@ localization_strategies = {"Inception": 1, "PlateDetection":1}
 segmentation_strategies = {"Inception": 1}
 classification_strategies = {"SVM": 1}
 # classification_strategies = {"CNN": 1, "VGG16":1, "SVM": 1, "TemplateMatching": 1}
-classification_unloaded = ['MobileNet:both',"MobileNet","NASNetMobile","DenseNet121","DenseNet169","DenseNet201",
+classification_unloaded = ['MobileNet:both',"InceptionResNetV2:both","MobileNet","NASNetMobile","DenseNet121","DenseNet169","DenseNet201",
                            "ResNet50","NASNetLarge","Xception","InceptionV3","InceptionResNetV2","VGG16","VGG19"]
-segmentation_unloaded = ['ResNet101']
-localization_unloaded = []
+segmentation_unloaded = ['ResNet101',"Inception-ResNet","FasterRCNN-ResNet"]
+localization_unloaded = ["ResNet101","Inception-ResNet"]
 
 segmenter = package.segmenter(segmentation_strategies)
 classifier = package.classifier(classification_strategies)
@@ -60,7 +60,6 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
             [[box, vehicle_image], class_detected, prob], _ = localize.localize(path,
                                                                              load_model=load_object,
                                                                              localization_strategy=localization_class)
-            print("hizzzzzzzzzzzzzzzzzzzzzz")
             if vehicle_image is None:
                 raise AssertionError
             else:
@@ -163,8 +162,8 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
                                                                                      classification_object=classification_object)
                 print(predicted_label)
                 load_object = False
-                cv2.imshow("image", images[image_index])
-                cv2.waitKey()
+                # cv2.imshow("image", images[image_index])
+                # cv2.waitKey(0)
                 # cv2.imwrite("./" + image_index + ".jpg", images[image_index])
                 # import scipy.misc
                 # scipy.misc.imsave(str(image_index) +'.jpg', images[image_index])
@@ -173,8 +172,9 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
                 else:
                     note += str(predicted_label)
 
-                # print(int(classes[image_index]))
+                print(int(classes[image_index]))
                 # print(note)
+            cv2.destroyAllWindows()
             note += letters_note[::-1]
             print(note)
             classification_type = temp_classification_type
