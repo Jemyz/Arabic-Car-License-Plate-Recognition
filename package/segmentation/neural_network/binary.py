@@ -11,6 +11,7 @@ def binary_otsu(img_gray):
     nonzero = np.count_nonzero(img_thresh)
     if nonzero - (9/pixels_total) * 100 > pixels_total - nonzero:
         img_thresh = cv2.bitwise_not(img_thresh)
+        # img_thresh = cv2.bitwise_not(img_thresh)
 
     '''
     gaussian = cv2.getGaussianKernel(3, 3)

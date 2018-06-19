@@ -60,7 +60,6 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
             [[box, vehicle_image], class_detected, prob], _ = localize.localize(path,
                                                                                 load_model=load_object,
                                                                                 localization_strategy=localization_class)
-            print("hizzzzzzzzzzzzzzzzzzzzzz")
             if vehicle_image is None:
                 raise AssertionError
             else:
@@ -127,9 +126,7 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
                     fs.delete(image_name)
 
                 directory = os.path.join(settings.MEDIA_ROOT, segmented_name)
-                print("jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj")
                 segmenter.visualize(image, directory, boxes, classes)
-                print("jjjjjjjjjj")
 
                 return ["segmentation", fs.url(segmented_name), note]
 
@@ -175,8 +172,8 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
                                                                                      classification_object=classification_object)
                 print(predicted_label)
                 load_object = False
-                cv2.imshow("image", images[image_index])
-                cv2.waitKey()
+                # cv2.imshow("image", images[image_index])
+                # cv2.waitKey(0)
                 # cv2.imwrite("./" + image_index + ".jpg", images[image_index])
                 # import scipy.misc
                 # scipy.misc.imsave(str(image_index) +'.jpg', images[image_index])
@@ -185,7 +182,7 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
                 else:
                     note += str(predicted_label)
 
-                # print(int(classes[image_index]))
+                print(int(classes[image_index]))
                 # print(note)
 
             cv2.destroyAllWindows()
@@ -197,7 +194,6 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
                 classifier.append_classification_strategy(classification_class, classification_object)
             else:
                 if not (classification_object is None):
-                    print("ss")
                     del classification_object
         else:
             raise ValueError
@@ -205,7 +201,6 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
     except Exception as e:
 
         if classification_object is not None and classification_class and classification_type not in classification_unloaded:
-            print("in")
             classifier.append_classification_strategy(classification_class, classification_object)
         else:
             if not (classification_object is None):
@@ -244,7 +239,6 @@ def handle_file(file, classification_type, segmentation_type, localization_type)
     if type_file == "image":
         result = handle_image(filename, classification_type, segmentation_type, localization_type)
         result = [result]
-        print("kkkk")
     else:
         result = handle_video(filename, classification_type, segmentation_type, localization_type)
 
@@ -269,8 +263,6 @@ def index(request):
                                            classification_type,
                                            segmentation_type,
                                            localization_type)
-                print(array_frames)
-                print("llllllllllllllllllllll")
                 for [final_stage, images_url, note] in array_frames:
                     data.append({"final_stage": final_stage, "images_url": images_url, "note": note})
 
