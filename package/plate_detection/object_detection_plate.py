@@ -7,9 +7,9 @@ from package.plate_detection.misc import read_image
 from package.plate_detection.localization_abstract import LocalizationAbstract
 
 model_map = {
-    "Faster-Inception-ResNet": "Inception",
-    "Faster-ResNet101": "Inception-ResNet",
-    "Faster-Inception": "ResNet101"
+    "Faster-Inception-ResNet": "Inception-ResNet",
+    "Faster-ResNet101": "ResNet101",
+    "Faster-Inception": "Inception"
 }
 
 
