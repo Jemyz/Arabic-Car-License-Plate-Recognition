@@ -8,6 +8,14 @@ from package.segmentation.neural_network import binary
 from package.segmentation.segmentaion_abstract import SegmentationAbstract
 from package.segmentation.Lisence_Plate_Type import get_lisence_type
 
+model_map = {
+    "Faster-Inception-ResNet": "Inception-ResNet",
+    "Faster-ResNet101": "FasterRCNN-ResNet",
+    "Faster-Inception": "Inception",
+    "RFCN-ResNet101": "ResNet101",
+    "NewFCNResNet": "NewFCNResNet"
+}
+
 
 class Inception(SegmentationAbstract):
 
@@ -19,14 +27,14 @@ class Inception(SegmentationAbstract):
 
         # Name of the directory containing the object detection module we're using
         model_name = 'inference_graph'
-        self.model = model
+        self.model = model_map[model]
         # Grab path to current working directory
         self.CWD_PATH = os.getcwd()
 
         # Path to frozen detection graph .pb file, which contains the model that is used
         # for object detection.
         path_to_model = os.path.join(self.CWD_PATH, "package", "segmentation", "neural_network", model_name,
-                                     model + '.pb')
+                                     self.model + '.pb')
 
         # Load the Tensorflow model into memory.
         detection_graph = tf.Graph()
@@ -76,7 +84,7 @@ class Inception(SegmentationAbstract):
                 scores_final.append(scores[0][i])
 
         type_plate = "segmented image"
-        if not (self.model  == "NewFCNResNet"):
+        if not (self.model == "NewFCNResNet"):
             type_plate = get_lisence_type(image)
 
         images = binary.binarize(image, boxes_final, classes_final, scores_final)

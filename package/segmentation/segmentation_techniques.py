@@ -3,12 +3,11 @@ from package.segmentation.Inception import Inception
 from threading import Semaphore
 
 import cv2
-
 model_map = {
-    "Inception": Inception,
-    "ResNet101": Inception,
-    "Inception-ResNet": Inception,
-    "FasterRCNN-ResNet": Inception,
+    "Faster-Inception": Inception,
+    "RFCN-ResNet101": Inception,
+    "Faster-Inception-ResNet": Inception,
+    "Faster-ResNet101": Inception,
     "NewFCNResNet": Inception
 }
 

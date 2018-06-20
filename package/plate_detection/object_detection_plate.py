@@ -6,6 +6,12 @@ from package.plate_detection.misc import read_image
 
 from package.plate_detection.localization_abstract import LocalizationAbstract
 
+model_map = {
+    "Faster-Inception-ResNet": "Inception",
+    "Faster-ResNet101": "Inception-ResNet",
+    "Faster-Inception": "ResNet101"
+}
+
 
 class ObjectDetection(LocalizationAbstract):
 
@@ -16,11 +22,11 @@ class ObjectDetection(LocalizationAbstract):
 
         # Grab path to current working directory
         self.CWD_PATH = os.getcwd()
-
+        model = model_map[model]
         # Path to frozen detection graph .pb file, which contains the model that is used
         # for object detection.
         path_to_model = os.path.join(self.CWD_PATH, "package", "plate_detection", "object_detection_plates", "models",
-                                     model+'.pb')
+                                     model + '.pb')
 
         # Load the Tensorflow model into memory.
         detection_graph = tf.Graph()

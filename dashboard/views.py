@@ -13,14 +13,16 @@ import json
 import time
 from dashboard.toframe import video_framing
 
-localization_strategies = {"Inception": 1}
-segmentation_strategies = {"Inception": 1}
-classification_strategies = {"SVM": 1}
+localization_strategies = {"Faster-Inception": 1}
+segmentation_strategies = {"Faster-Inception": 1}
+classification_strategies = {"MobileNet": 1}
+# classification_strategies = {"MobileNet": 1, "VGG19": 1}
 # classification_strategies = {"CNN": 1, "VGG16":1, "SVM": 1, "TemplateMatching": 1}
-classification_unloaded = ['MobileNet:both', "MobileNet", "NASNetMobile", "DenseNet121", "DenseNet169", "DenseNet201",
-                           "ResNet50", "NASNetLarge", "Xception", "InceptionV3", "InceptionResNetV2", "VGG16", "VGG19"]
-segmentation_unloaded = ['ResNet101', "Inception-ResNet", "FasterRCNN-ResNet"]
-localization_unloaded = ['ResNet101', "Inception-ResNet", "PlateDetection"]
+classification_unloaded = ['MobileNet:both', "SVM", "NASNetMobile", "DenseNet121", "DenseNet169", "DenseNet201",
+                           "ResNet50", "NASNetLarge", "Xception", "InceptionV3", "InceptionResNetV2", "VGG16", "CNN",
+                           "TemplateMatching"]
+segmentation_unloaded = ['Faster-ResNet101', "Faster-Inception-ResNet", "RFCN-ResNet101"]
+localization_unloaded = ['Faster-ResNet101', "Faster-Inception-ResNet", "PlateDetection"]
 
 segmenter = package.segmenter(segmentation_strategies)
 classifier = package.classifier(classification_strategies)
@@ -79,9 +81,8 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
 
                 directory = os.path.join(settings.MEDIA_ROOT, localized_name)
                 localize.visualize(vehicle_image, directory, box, class_detected)
-                print(localization_type)
 
-                return ["localization", fs.url(localized_name), note]
+                return ["Localization by   " + localization_type, fs.url(localized_name), note]
 
         elif not (localization_type == "None"):
             raise ValueError("type not defined")
@@ -128,7 +129,9 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
                 directory = os.path.join(settings.MEDIA_ROOT, segmented_name)
                 segmenter.visualize(image, directory, boxes, classes)
 
-                return ["segmentation", fs.url(segmented_name), note]
+                return ["Localization by " + localization_type + "   Segmentation by  " + segmentation_type,
+                        fs.url(segmented_name),
+                        note]
 
         else:
             raise ValueError
@@ -208,13 +211,17 @@ def handle_image(image_name, classification_type, segmentation_type, localizatio
 
         print('%s (%s)' % (e, type(e)))
 
-        return ["error", fs.url(image_name), "classifier failed to classify the image"]
+        return ["error", fs.url(image_name), "Memory error"]
 
     image_new_name = "classification ___ " + note + "- " + fs.generate_filename(image_name)
     new_path = os.path.join(settings.MEDIA_ROOT, image_new_name)
     os.rename(path, new_path)
 
-    return ["classification", fs.url(image_new_name), note]
+    return ["Localization by " + localization_type +
+             "   Segmentation by " + segmentation_type +
+             "   Classification by " + temp_classification_type,
+            fs.url(image_new_name),
+            note]
 
 
 def handle_video(filename, classification_type, segmentation_type, localization_type):

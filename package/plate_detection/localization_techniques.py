@@ -6,9 +6,9 @@ from package.plate_detection.object_detection_plate import ObjectDetection
 from package.plate_detection.classify import classify
 
 model_map = {
-    "Inception": ObjectDetection,
-    "ResNet101": ObjectDetection,
-    "Inception-ResNet": ObjectDetection
+    "Faster-Inception-ResNet": ObjectDetection,
+    "Faster-ResNet101": ObjectDetection,
+    "Faster-Inception": ObjectDetection
 }
 
 
